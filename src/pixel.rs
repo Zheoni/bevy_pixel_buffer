@@ -71,6 +71,7 @@ impl Pixel {
     /// Gets a random pixel. Solid, alpha is 255.
     ///
     /// Uses [rand::thread_rng] to get the random value.
+    #[cfg(feature = "rand")]
     pub fn random() -> Self {
         let c = rand::random::<u32>() | 0xff000000;
         c.into()

@@ -48,3 +48,4 @@ fn update(mut pb: QueryPixelBuffer) {
 All features are enabled by default.
 - `egui`. Egui integration.
 - `rayon`. Enables extra alternative functions that use rayon.
+- `rand`. Enables extra functionality related to random values.
