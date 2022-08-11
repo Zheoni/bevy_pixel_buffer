@@ -1,5 +1,9 @@
 # bevy_pixel_buffer
 
+[![Crates.io](https://img.shields.io/crates/v/bevy_pixel_buffer)](https://crates.io/crates/bevy_pixel_buffer)
+[![docs.rs](https://img.shields.io/docsrs/bevy_pixel_buffer)](https://docs.rs/bevy_pixel_buffer/)
+![Crates.io](https://img.shields.io/crates/l/bevy_pixel_buffer)
+
 A library to draw pixels in [bevy](https://crates.io/crates/bevy).
 
 - Easy to set up and use.
