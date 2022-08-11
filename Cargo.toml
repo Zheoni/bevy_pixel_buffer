@@ -1,0 +1,34 @@
+[package]
+name = "bevy_pixel_buffer"
+version = "0.1.0"
+edition = "2021"
+authors = ["Francisco J. Sánchez <zheoni@outlook.es>"]
+description = "A library to draw pixels in bevy"
+license = "MIT"
+keywords = ["bevy", "2D", "frambuffer", "pixels", "gamedev"]
+categories = ["graphics", "rendering", "game-development"]
+repository = "https://github.com/Zheoni/bevy_pixel_buffer"
+readme = "README.md"
+
+[dependencies]
+bevy_egui = { version = "0.15", optional = true }
+bytemuck = { version = "1.10", features = ["derive"] }
+env_logger = "0.9"
+log = "0.4"
+rand = "0.8"
+rayon = { version = "1.5", optional = true }
+thiserror = "1.0"
+
+[dependencies.bevy]
+version = "0.8"
+default-features = false
+features = [
+    "bevy_winit",
+    "bevy_render",
+    "bevy_sprite",
+]
+
+[features]
+default = ["egui", "rayon"]
+egui = ["dep:bevy_egui"]
+rayon = ["dep:rayon"]
