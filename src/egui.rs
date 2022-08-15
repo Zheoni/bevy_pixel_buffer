@@ -8,7 +8,7 @@ use bevy_egui::{
 };
 
 use crate::{
-    pixel_buffer::{Fill, FillKind, PixelBufferSize},
+    pixel_buffer::{Fill, FillKind, PixelBuffer, PixelBufferSize},
     prelude::Pixel,
 };
 
@@ -44,22 +44,22 @@ impl Plugin for PixelBufferEguiPlugin {
 fn register_egui(
     mut commands: Commands,
     mut egui_ctx: ResMut<EguiContext>,
-    pixel_buffer: Query<(Entity, &PixelBufferSize, &Handle<Image>), Added<Handle<Image>>>,
+    pixel_buffer: Query<(Entity, &PixelBuffer, &Handle<Image>), Added<Handle<Image>>>,
 ) {
-    for (entity, size, image_handle) in pixel_buffer.iter() {
+    for (entity, pb, image_handle) in pixel_buffer.iter() {
         let texture = EguiTexture {
             id: egui_ctx.add_image(image_handle.clone_weak()),
-            size: size.egui_texture_size(),
+            size: pb.size.egui_texture_size(),
         };
         commands.entity(entity).insert(texture);
     }
 }
 
 fn update_egui_texture_size(
-    mut pixel_buffer: Query<(&PixelBufferSize, &mut EguiTexture), Changed<PixelBufferSize>>,
+    mut pixel_buffer: Query<(&PixelBuffer, &mut EguiTexture), Changed<PixelBuffer>>,
 ) {
-    for (size, mut texture) in pixel_buffer.iter_mut() {
-        texture.size = size.egui_texture_size();
+    for (pb, mut texture) in pixel_buffer.iter_mut() {
+        texture.size = pb.size.egui_texture_size();
     }
 }
 

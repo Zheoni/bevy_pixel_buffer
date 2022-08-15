@@ -1,37 +1,92 @@
 //! Utilities for constructing pixel buffers.
 //!
-//! This adds ergonomic ways to call [spawn_pixel_buffer](crate::pixel_buffer::spawn_pixel_buffer).
+//! This adds ergonomic ways to create and render a pixel buffer.
+//! Alternatively [Bundle]s in [crate::bundle] can be used.
 
-use crate::pixel_buffer::{
-    spawn_pixel_buffer, Fill, PixelBufferCommands, PixelBufferSize, RenderConfig,
+use std::fmt::Debug;
+
+use crate::{
+    bundle::PixelBufferBundle,
+    pixel_buffer::{create_image, Fill, PixelBuffer, PixelBufferSize},
+    prelude::Frame,
 };
-use bevy::prelude::*;
+use bevy::{ecs::system::EntityCommands, prelude::*, sprite::Anchor};
+
+/// Render setup configuration
+#[derive(Clone, Debug)]
+pub enum RenderConfig {
+    /// Set up a sprite and an optional 2D camera
+    Sprite {
+        /// Spawn a 2D camera
+        spawn_camera: bool,
+        /// Custom sprite bundle parameters.
+        ///
+        /// Different from [SpriteBundle] because [SpriteBundle] some extra fields that are not customisable.
+        sprite_bundle: CustomSpriteBundle,
+    },
+}
+
+/// Customisable params for the sprite bundle that will be rendered by [RenderConfig].
+///
+/// See [SpriteBundle] for docs.
+#[derive(Clone, Debug, Default)]
+#[allow(missing_docs)]
+pub struct CustomSpriteBundle {
+    pub sprite: CustomSprite,
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
+    pub visibility: Visibility,
+    pub computed_visibility: ComputedVisibility,
+}
+
+/// Customisable params for the sprite that will be rendered by [RenderConfig].
+///
+/// See [Sprite] for docs.
+#[derive(Clone, Debug, Default)]
+#[allow(missing_docs)]
+pub struct CustomSprite {
+    pub color: Color,
+    pub flip_x: bool,
+    pub flip_y: bool,
+    pub anchor: Anchor,
+}
+
+impl Default for RenderConfig {
+    fn default() -> Self {
+        Self::sprite()
+    }
+}
+
+impl RenderConfig {
+    /// Set up a 2D camera and a sprite
+    pub fn sprite_and_camera() -> Self {
+        Self::Sprite {
+            spawn_camera: true,
+            sprite_bundle: Default::default(),
+        }
+    }
+
+    /// Set up the sprite.
+    ///
+    /// A camera also needs to be spawned to see the sprite.
+    pub fn sprite() -> Self {
+        Self::Sprite {
+            spawn_camera: false,
+            sprite_bundle: Default::default(),
+        }
+    }
+}
 
 /// Helper type to allow easy [RenderConfig] conversions inside the [PixelBufferBuilder].
 ///
 /// It only wraps an [Option<RenderConfig>].
 ///
-/// Converting from [RenderConfig] value will wrap it in [Some].
-/// ```
-/// # use bevy_pixel_buffer::builder::RenderConfigBuilder;
-/// # use bevy_pixel_buffer::pixel_buffer::RenderConfig;
-/// let value: RenderConfigBuilder = RenderConfig::sprite_only().into();
-/// assert_eq!(value, RenderConfigBuilder(Some(RenderConfig::sprite_only())));
-/// ```
+/// From a [RenderConfig] value, it will wrap it in [Some].
 ///
-/// From [bool], `true` is a "full" render setup and `false` is no setup at all:
-/// ```
-/// # use bevy_pixel_buffer::builder::RenderConfigBuilder;
-/// # use bevy_pixel_buffer::pixel_buffer::RenderConfig;
-/// let value: RenderConfigBuilder = true.into();
-/// assert_eq!(value, RenderConfig::sprite_and_camera().into());
-/// ```
-/// ```
-/// # use bevy_pixel_buffer::builder::RenderConfigBuilder;
-/// let value: RenderConfigBuilder = false.into();
-/// assert_eq!(value, None.into());
-/// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// From [bool]:
+/// - `true` is a "full" render setup
+/// - `false` is no render at all
+#[derive(Debug, Clone)]
 pub struct RenderConfigBuilder(pub Option<RenderConfig>);
 
 impl Default for RenderConfigBuilder {
@@ -43,7 +98,7 @@ impl Default for RenderConfigBuilder {
 impl From<bool> for RenderConfigBuilder {
     fn from(v: bool) -> Self {
         Self(if v {
-            Some(RenderConfig::AsSprite { spawn_camera: true })
+            Some(RenderConfig::sprite_and_camera())
         } else {
             None
         })
@@ -62,7 +117,7 @@ impl From<RenderConfig> for RenderConfigBuilder {
     }
 }
 
-/// Helper type to spawn pixel buffers.
+/// Helper type to create pixel buffers.
 ///
 /// # Example
 /// This system spawns a pixel buffer with a custom size.
@@ -75,7 +130,7 @@ impl From<RenderConfig> for RenderConfigBuilder {
 ///         .spawn(&mut commands, &mut images);
 /// }
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct PixelBufferBuilder {
     /// Custom size
     pub size: PixelBufferSize,
@@ -122,13 +177,25 @@ impl PixelBufferBuilder {
         self
     }
 
-    /// Spawns a new pixel buffer with the builder's configuration.
+    /// Spawns a new entity and inserts a pixel buffer with the builder's configuration to it.
     pub fn spawn<'w, 's, 'a>(
         self,
         commands: &'a mut Commands<'w, 's>,
         images: &'a mut Assets<Image>,
     ) -> PixelBufferCommands<'w, 's, 'a> {
-        spawn_pixel_buffer(commands, images, self.size, self.fill, self.render)
+        let entity = commands.spawn();
+        create_pixel_buffer(entity, images, self.size, self.fill, self.render)
+    }
+
+    /// Inserts a new pixel buffer with the builder's configuration into an existing entity.
+    pub fn insert<'w, 's, 'a>(
+        self,
+        commands: &'a mut Commands<'w, 's>,
+        images: &'a mut Assets<Image>,
+        entity: Entity,
+    ) -> PixelBufferCommands<'w, 's, 'a> {
+        let entity = commands.entity(entity);
+        create_pixel_buffer(entity, images, self.size, self.fill, self.render)
     }
 
     /// Returns a system that spawns a pixel buffer with the builder's configuration.
@@ -152,10 +219,65 @@ impl PixelBufferBuilder {
     ///         .run()
     /// }
     /// ```
-    pub fn setup(self) -> impl Fn(Commands, ResMut<Assets<Image>>) {
+    pub fn setup(self) -> impl FnMut(Commands, ResMut<Assets<Image>>) {
         move |mut commands, mut images| {
-            self.spawn(&mut commands, &mut images);
+            self.clone().spawn(&mut commands, &mut images);
         }
+    }
+}
+
+fn create_pixel_buffer<'w, 's, 'a>(
+    mut entity: EntityCommands<'w, 's, 'a>,
+    images: &'a mut Assets<Image>,
+    size: PixelBufferSize,
+    fill: Fill,
+    render: Option<RenderConfig>,
+) -> PixelBufferCommands<'w, 's, 'a> {
+    let image = create_image(images, size.size);
+
+    if let Some(render) = render {
+        match render {
+            RenderConfig::Sprite {
+                spawn_camera,
+                sprite_bundle,
+            } => {
+                // Spawn a 2D camera if needed
+                if spawn_camera {
+                    entity.commands().spawn_bundle(Camera2dBundle::default());
+                }
+
+                // Add a sprite with the image as texture
+
+                // this also adds a image_handle, but just replacing the existing one
+                // which is the same handle
+                let sprite_bundle = SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(size.screen_size().as_vec2()),
+                        color: sprite_bundle.sprite.color,
+                        flip_x: sprite_bundle.sprite.flip_x,
+                        flip_y: sprite_bundle.sprite.flip_y,
+                        anchor: sprite_bundle.sprite.anchor,
+                    },
+                    texture: image.clone(),
+                    transform: sprite_bundle.transform,
+                    global_transform: sprite_bundle.global_transform,
+                    visibility: sprite_bundle.visibility,
+                    computed_visibility: sprite_bundle.computed_visibility,
+                };
+                entity.insert_bundle(sprite_bundle);
+            }
+        }
+    }
+
+    entity.insert_bundle(PixelBufferBundle {
+        pixel_buffer: PixelBuffer { size, fill },
+        image: image.clone(),
+    });
+
+    PixelBufferCommands {
+        images,
+        image_handle: image.clone_weak(),
+        entity_commands: entity,
     }
 }
 
@@ -182,5 +304,41 @@ pub fn pixel_buffer_setup(
         PixelBufferBuilder::new()
             .with_size(size)
             .spawn(&mut commands, &mut images);
+    }
+}
+
+/// Struct returned from creating a pixel buffer with [PixelBufferBuilder]
+/// allowing to work with the new buffer.
+pub struct PixelBufferCommands<'w, 's, 'a> {
+    images: &'a mut Assets<Image>,
+    image_handle: Handle<Image>,
+    entity_commands: EntityCommands<'w, 's, 'a>,
+}
+
+impl<'w, 's, 'a> PixelBufferCommands<'w, 's, 'a> {
+    /// Gets the frame to edit the buffer.
+    pub fn get_frame(&mut self) -> Frame<'_> {
+        Frame::extract(self.images, &self.image_handle)
+    }
+
+    /// Runs a given closure to initialize the buffer.
+    pub fn init_frame(&'a mut self, f: impl Fn(&mut Frame)) -> &mut Self {
+        f(&mut self.get_frame());
+        self
+    }
+
+    /// Returns a **strong** handle to the underlying image.
+    pub fn image(&self) -> Handle<Image> {
+        self.image_handle.clone()
+    }
+
+    /// Returns a **weak** handle to the underlying image.
+    pub fn image_weak(&self) -> Handle<Image> {
+        self.image_handle.clone_weak()
+    }
+
+    /// Returns the [EntityCommands] struct to work with the buffer entity.
+    pub fn entity(&mut self) -> &mut EntityCommands<'w, 's, 'a> {
+        &mut self.entity_commands
     }
 }

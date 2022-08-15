@@ -28,6 +28,7 @@
 #![deny(rustdoc::broken_intra_doc_links)]
 
 pub mod builder;
+pub mod bundle;
 pub mod compute_shader;
 #[cfg(feature = "egui")]
 pub mod egui;
@@ -38,7 +39,7 @@ pub mod query;
 
 pub mod prelude {
     //! Common imports
-    pub use crate::builder::{pixel_buffer_setup, PixelBufferBuilder};
+    pub use crate::builder::{pixel_buffer_setup, PixelBufferBuilder, RenderConfig};
     pub use crate::compute_shader::{ComputeShader, ComputeShaderPlugin};
     #[cfg(feature = "egui")]
     pub use crate::egui::{EguiTexture, PixelBufferEguiPlugin};

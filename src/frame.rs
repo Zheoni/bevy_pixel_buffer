@@ -1,7 +1,7 @@
 //! Frame and frame utility functions that helps to draw things on raw image data.
 
 use crate::pixel::Pixel;
-use bevy::prelude::*;
+use bevy::{prelude::*, render::render_resource::TextureUsages};
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 
 /// Helper structure to edit a pixel buffer
@@ -15,7 +15,7 @@ pub struct Frame<'a> {
 impl<'a> Frame<'a> {
     /// Access the pixels directly
     pub fn raw(&self) -> &[Pixel] {
-        &self.pixels
+        self.pixels
     }
 
     /// Access the pixels directly mutable
@@ -111,6 +111,11 @@ pub enum FrameError {
 impl<'a> Frame<'a> {
     /// Builds a frame from a bevy image
     pub fn get(image: &'a mut Image) -> Self {
+        debug_assert_eq!(image.texture_descriptor.format, Pixel::FORMAT);
+        debug_assert!(image
+            .texture_descriptor
+            .usage
+            .contains(TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST));
         let size = image.size().as_uvec2();
         let pixels = bytemuck::cast_slice_mut(&mut image.data);
         Self { pixels, size }

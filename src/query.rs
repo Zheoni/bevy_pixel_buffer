@@ -23,17 +23,7 @@ pub trait GetFrame {
 
 impl GetFrame for QueryPixelBuffer<'_, '_, '_> {
     fn frame(&mut self) -> Frame<'_> {
-        let (_, image_handle) = match self.1.get_single() {
-            Ok(h) => h,
-            Err(QuerySingleError::MultipleEntities(_)) => panic!(
-                "Cannot use '{}' when there are multiple frame buffers.",
-                std::any::type_name::<Self>()
-            ),
-            Err(QuerySingleError::NoEntities(_)) => panic!(
-                "No frame buffer found by '{}'.",
-                std::any::type_name::<Self>()
-            ),
-        };
+        let (_, image_handle) = single(self.1.get_single());
         Frame::extract(&mut self.0, image_handle)
     }
 }
@@ -52,7 +42,7 @@ impl GetEntity for QueryPixelBuffer<'_, '_, '_> {
 
 #[cfg(feature = "egui")]
 mod egui_queries {
-    use crate::{egui::EguiTexture, prelude::Fill};
+    use crate::egui::EguiTexture;
     use bevy_egui::egui;
 
     use super::*;
@@ -63,7 +53,12 @@ mod egui_queries {
         Query<
             'w,
             's,
-            (Entity, &'a Handle<Image>, &'a EguiTexture, &'a mut Fill),
+            (
+                Entity,
+                &'a Handle<Image>,
+                &'a EguiTexture,
+                &'a mut PixelBuffer,
+            ),
             With<PixelBuffer>,
         >,
     );
@@ -86,7 +81,7 @@ mod egui_queries {
         /// Extracts the egui texture from the query
         fn egui_texture(&mut self) -> EguiTexture;
 
-        /// Sets the [Fill] to an area given by egui
+        /// Sets the [Fill](crate::pixel_buffer::Fill) to an area given by egui
         fn update_fill_egui(&mut self, available_saize: egui::Vec2);
     }
 
@@ -100,8 +95,8 @@ mod egui_queries {
                 info!("Skipping egui fill update, widht or height are 0");
                 return;
             }
-            let mut fill = single(self.1.get_single_mut()).3;
-            fill.update_egui(available_size);
+            let mut pb = single(self.1.get_single_mut()).3;
+            pb.fill.update_egui(available_size);
         }
     }
 }
@@ -112,12 +107,11 @@ pub use egui_queries::*;
 fn single<T>(v: Result<T, QuerySingleError>) -> T {
     match v {
         Ok(r) => r,
-        Err(QuerySingleError::MultipleEntities(_)) => panic!(
-            "Cannot use '{}' when there are multiple frame buffers.",
-            std::any::type_name::<T>()
-        ),
+        Err(QuerySingleError::MultipleEntities(_)) => {
+            panic!("Cannot use premade query when there are multiple pixel buffers.")
+        }
         Err(QuerySingleError::NoEntities(_)) => {
-            panic!("No frame buffer found by '{}'.", std::any::type_name::<T>())
+            panic!("No pixel buffer found by premade query.")
         }
     }
 }
