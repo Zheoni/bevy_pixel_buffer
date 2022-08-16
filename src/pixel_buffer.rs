@@ -6,6 +6,7 @@ use bevy::{
         render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureUsages},
         texture::ImageSampler,
     },
+    window::WindowId,
 };
 
 use crate::prelude::Pixel;
@@ -44,8 +45,8 @@ pub struct Fill {
 pub enum FillKind {
     /// Fill disabled
     None,
-    /// Fill the window
-    Window,
+    /// Fill a window
+    Window(WindowId),
     /// Fill a customs size
     Custom(Vec2),
 }
@@ -69,10 +70,10 @@ impl Fill {
         }
     }
 
-    /// Fill the window
+    /// Fill the primary window
     pub fn window() -> Self {
         Self {
-            kind: FillKind::Window,
+            kind: FillKind::Window(WindowId::primary()),
             ..Default::default()
         }
     }
@@ -338,8 +339,8 @@ fn sprite_custom_size(
 fn get_fill_area(pb: &PixelBuffer, windows: &Windows) -> Option<Vec2> {
     match pb.fill.kind {
         FillKind::None => None,
-        FillKind::Window => windows
-            .get_primary()
+        FillKind::Window(window_id) => windows
+            .get(window_id)
             .map(|window| Vec2::new(window.width(), window.height())),
         FillKind::Custom(custom_size) => Some(custom_size),
     }
