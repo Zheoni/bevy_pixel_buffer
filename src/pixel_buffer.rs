@@ -301,14 +301,14 @@ fn resize(
 fn fill(mut pixel_buffer: Query<&mut PixelBuffer>, windows: Res<Windows>) {
     for mut pb in pixel_buffer.iter_mut() {
         if let Some(fill_area) = get_fill_area(&pb, &windows) {
-            let PixelBuffer { size, fill } = &mut *pb;
+            let PixelBuffer { size, fill } = pb.as_ref();
 
             let new_buffer_size = fill_area.as_uvec2() / size.pixel_size;
             // Truncate to the fill multiple
             let new_buffer_size = (new_buffer_size / fill.multiple) * fill.multiple;
 
             if new_buffer_size != size.size {
-                size.size = new_buffer_size;
+                pb.size.size = new_buffer_size;
             }
         }
     }
@@ -342,5 +342,131 @@ fn get_fill_area(pb: &PixelBuffer, windows: &Windows) -> Option<Vec2> {
             .get_primary()
             .map(|window| Vec2::new(window.width(), window.height())),
         FillKind::Custom(custom_size) => Some(custom_size),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bundle::{PixelBufferBundle, PixelBufferSpriteBundle};
+
+    #[test]
+    fn do_resize_image() {
+        let mut app = App::new();
+
+        app.add_plugin(bevy::asset::AssetPlugin)
+            .add_plugin(bevy::window::WindowPlugin)
+            .add_plugin(bevy::render::RenderPlugin);
+
+        app.add_system(resize);
+
+        let initial_size = UVec2::new(5, 5);
+        let set_size = UVec2::new(10, 10);
+
+        assert_ne!(initial_size, set_size);
+
+        let mut images = app.world.resource_mut::<Assets<Image>>();
+        let image = create_image(&mut images, initial_size.into());
+
+        let pb_id = app
+            .world
+            .spawn()
+            .insert_bundle(PixelBufferBundle {
+                pixel_buffer: PixelBuffer {
+                    size: PixelBufferSize::size(set_size),
+                    fill: Fill::none(),
+                },
+                image,
+            })
+            .id();
+
+        app.update();
+
+        let set_size = app.world.get::<PixelBuffer>(pb_id).unwrap().size.size;
+        let image_handle = app.world.get::<Handle<Image>>(pb_id).unwrap();
+        let images = app.world.resource::<Assets<Image>>();
+        let image_size = images.get(image_handle).unwrap().size().as_uvec2();
+
+        assert_eq!(set_size, image_size);
+    }
+
+    #[test]
+    fn do_resize_sprite() {
+        let mut app = App::new();
+
+        app.add_plugins(MinimalPlugins)
+            .add_plugin(bevy::asset::AssetPlugin)
+            .add_plugin(bevy::window::WindowPlugin)
+            .add_plugin(bevy::render::RenderPlugin)
+            .add_plugin(bevy::core_pipeline::CorePipelinePlugin)
+            .add_plugin(bevy::sprite::SpritePlugin);
+
+        app.add_system(sprite_custom_size);
+
+        let set_size = UVec2::new(10, 10);
+
+        let mut images = app.world.resource_mut::<Assets<Image>>();
+        let image = create_image(&mut images, set_size.into());
+
+        let pb_id = app
+            .world
+            .spawn()
+            .insert_bundle(PixelBufferSpriteBundle {
+                pixel_buffer: PixelBuffer {
+                    size: PixelBufferSize::size(set_size),
+                    fill: Fill::none(),
+                },
+                sprite_bundle: SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: None,
+                        ..Default::default()
+                    },
+                    texture: image,
+                    ..Default::default()
+                },
+            })
+            .id();
+
+        app.update();
+
+        let size = app.world.get::<PixelBuffer>(pb_id).unwrap().size;
+        let sprite = app.world.get::<Sprite>(pb_id).unwrap();
+
+        assert!(sprite.custom_size.is_some());
+        assert_eq!(size.screen_size(), sprite.custom_size.unwrap().as_uvec2());
+    }
+
+    #[test]
+    fn do_fill() {
+        let mut app = App::new();
+
+        app.add_plugin(bevy::asset::AssetPlugin)
+            .add_plugin(bevy::window::WindowPlugin)
+            .add_plugin(bevy::render::RenderPlugin);
+
+        app.add_system(fill);
+
+        let set_size = UVec2::new(5, 5);
+        let fill_area = Vec2::new(10.5, 10.4);
+
+        let mut images = app.world.resource_mut::<Assets<Image>>();
+        let image = create_image(&mut images, set_size.into());
+
+        let pb_id = app
+            .world
+            .spawn()
+            .insert_bundle(PixelBufferBundle {
+                pixel_buffer: PixelBuffer {
+                    size: PixelBufferSize::size(set_size),
+                    fill: Fill::custom(fill_area),
+                },
+                image,
+            })
+            .id();
+
+        app.update();
+
+        let size = app.world.get::<PixelBuffer>(pb_id).unwrap().size.size;
+        assert_eq!(size, UVec2::new(10, 10));
     }
 }
