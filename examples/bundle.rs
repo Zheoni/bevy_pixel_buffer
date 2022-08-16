@@ -27,7 +27,7 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
             size,
             fill: Fill::none(),
         },
-        sprite: SpriteBundle {
+        sprite_bundle: SpriteBundle {
             //important, use `create_image`
             texture: create_image(
                 &mut images,
