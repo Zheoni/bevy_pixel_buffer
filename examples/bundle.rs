@@ -1,5 +1,9 @@
 use bevy::prelude::*;
-use bevy_pixel_buffer::{bundle::PixelBufferSpriteBundle, pixel_buffer::create_image, prelude::*};
+use bevy_pixel_buffer::{
+    bundle::PixelBufferSpriteBundle,
+    pixel_buffer::{create_image, CreateImageParams},
+    prelude::*,
+};
 
 fn main() {
     App::new()
@@ -24,7 +28,14 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
             fill: Fill::none(),
         },
         sprite: SpriteBundle {
-            texture: create_image(&mut images, size.size), // <-- important, use `create_image`
+            //important, use `create_image`
+            texture: create_image(
+                &mut images,
+                CreateImageParams {
+                    size: size.size,
+                    ..Default::default()
+                },
+            ),
             sprite: Sprite {
                 color: Color::PINK,
                 ..Default::default()

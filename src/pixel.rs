@@ -23,7 +23,7 @@ pub struct Pixel {
 
 impl Pixel {
     /// WGPU texture format the pixel of the pixel
-    pub(crate) const FORMAT: TextureFormat = TextureFormat::Rgba8Unorm;
+    pub const FORMAT: TextureFormat = TextureFormat::Rgba8Unorm;
 
     #[allow(missing_docs)]
     pub const WHITE: Self = Self {

@@ -169,15 +169,74 @@ impl Default for PixelBufferSize {
     }
 }
 
+/// Parameters for [create_image].
+pub struct CreateImageParams {
+    /// Size of the image
+    pub size: UVec2,
+    /// wgpu label
+    pub label: Option<&'static str>,
+    /// Texture usages
+    ///
+    /// Has to include:
+    /// - [TextureUsages::TEXTURE_BINDING]
+    /// - [TextureUsages::COPY_DST]
+    /// - [TextureUsages::STORAGE_BINDING]
+    pub usage: TextureUsages,
+    /// Texture sampler
+    ///
+    /// For pixelated images the sensible sampler is [ImageSampler::nearest()].
+    pub sampler_descriptor: ImageSampler,
+}
+
+impl Default for CreateImageParams {
+    fn default() -> Self {
+        Self {
+            size: UVec2 { x: 32, y: 32 },
+            label: None,
+            usage: TextureUsages::TEXTURE_BINDING
+                | TextureUsages::COPY_DST
+                | TextureUsages::STORAGE_BINDING,
+            sampler_descriptor: ImageSampler::nearest(),
+        }
+    }
+}
+
+impl From<UVec2> for CreateImageParams {
+    fn from(size: UVec2) -> Self {
+        Self {
+            size,
+            ..Default::default()
+        }
+    }
+}
+
 /// Creates a compatible [Image] with the pixel buffer, adds it to the app assets and returns a handle
 ///
 /// The image data is set to 0.
-pub fn create_image(images: &mut Assets<Image>, size: UVec2) -> Handle<Image> {
-    let usage =
-        TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST | TextureUsages::STORAGE_BINDING; // for compute shaders, maybe allow to toggle this last one off
+///
+/// The wgpu format of the image is [Pixel::FORMAT].
+///
+/// # Panics
+/// - If the size is 0 in either dimension.
+/// - If the usages do not contain [TextureUsages::TEXTURE_BINDING],  [TextureUsages::COPY_DST] and [TextureUsages::STORAGE_BINDING].
+///
+pub fn create_image(images: &mut Assets<Image>, params: CreateImageParams) -> Handle<Image> {
+    let CreateImageParams {
+        size,
+        label,
+        usage,
+        sampler_descriptor,
+    } = params;
+
+    assert_ne!(size.x, 0);
+    assert_ne!(size.y, 0);
+    assert!(usage.contains(
+        TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST | TextureUsages::STORAGE_BINDING
+    ));
+
     let mut image = Image {
         texture_descriptor: TextureDescriptor {
-            label: None,
+            label,
             size: Extent3d {
                 width: size.x,
                 height: size.y,
@@ -190,7 +249,7 @@ pub fn create_image(images: &mut Assets<Image>, size: UVec2) -> Handle<Image> {
             usage,
         },
         data: vec![],
-        sampler_descriptor: ImageSampler::nearest(),
+        sampler_descriptor,
         texture_view_descriptor: None,
     };
     image.resize(image.texture_descriptor.size); // set image data to 0
