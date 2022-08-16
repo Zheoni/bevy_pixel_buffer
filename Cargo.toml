@@ -15,7 +15,7 @@ features = ["bevy/x11"]
 all-features = true
 
 [features]
-default = ["egui", "rayon", "rand"]
+default = ["rayon", "rand"]
 egui = ["dep:bevy_egui"]
 rayon = ["dep:rayon"]
 rand = ["dep:rand"]
@@ -34,6 +34,8 @@ default-features = false
 features = [
     "bevy_render",
     "bevy_sprite",
+    "bevy_asset",
+    "bevy_core_pipeline"
 ]
 
 [dev-dependencies.bevy]
@@ -43,3 +45,23 @@ features = [
     "x11",
     "bevy_winit",
 ]
+
+[[example]]
+name = "multiple_buffers"
+required-features = ["egui"]
+
+[[example]]
+name = "mandelbrot_set"
+required-features = ["egui"]
+
+[[example]]
+name = "mandelbrot_set_cpu"
+required-features = ["egui"]
+
+[[example]]
+name = "basic_egui"
+required-features = ["egui"]
+
+[[example]]
+name = "fill_egui"
+required-features = ["egui"]
