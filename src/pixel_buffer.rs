@@ -257,6 +257,21 @@ pub fn create_image(images: &mut Assets<Image>, params: CreateImageParams) -> Ha
     images.add(image)
 }
 
+/// [Plugin group](PluginGroup) that adds the complete `bevy_pixel_buffer`
+/// suite of plugins:
+/// - [PixelBufferPlugin]
+/// - [PixelBufferEguiPlugin](crate::egui::PixelBufferEguiPlugin) *requires `egui` feature*
+pub struct PixelBufferPlugins;
+
+impl PluginGroup for PixelBufferPlugins {
+    fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
+        group.add(PixelBufferPlugin);
+
+        #[cfg(feature = "egui")]
+        group.add(crate::egui::PixelBufferEguiPlugin);
+    }
+}
+
 /// [Plugin] that needs to be added to the app.
 pub struct PixelBufferPlugin;
 

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
-use bevy_pixel_buffer::{egui::PixelBufferEguiPlugin, prelude::*};
+use bevy_pixel_buffer::prelude::*;
 
 fn main() {
     let size = PixelBufferSize {
@@ -11,8 +11,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
-        .add_plugin(PixelBufferPlugin)
-        .add_plugin(PixelBufferEguiPlugin) // add the egui integration plugin
+        .add_plugins(PixelBufferPlugins)
         .add_startup_system(
             PixelBufferBuilder::new()
                 .with_size(size)
