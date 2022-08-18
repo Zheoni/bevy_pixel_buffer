@@ -29,13 +29,10 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         },
         sprite_bundle: SpriteBundle {
             //important, use `create_image`
-            texture: create_image(
-                &mut images,
-                CreateImageParams {
-                    size: size.size,
-                    ..Default::default()
-                },
-            ),
+            texture: images.add(create_image(CreateImageParams {
+                size: size.size,
+                ..Default::default()
+            })),
             sprite: Sprite {
                 color: Color::PINK,
                 ..Default::default()

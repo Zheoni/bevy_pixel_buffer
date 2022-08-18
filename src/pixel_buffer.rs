@@ -211,7 +211,9 @@ impl From<UVec2> for CreateImageParams {
     }
 }
 
-/// Creates a compatible [Image] with the pixel buffer, adds it to the app assets and returns a handle
+/// Creates a compatible [Image] with the pixel buffer.
+///
+/// The image needs to be added to the image assets to get a handle.
 ///
 /// The image data is set to 0.
 ///
@@ -221,7 +223,7 @@ impl From<UVec2> for CreateImageParams {
 /// - If the size is 0 in either dimension.
 /// - If the usages do not contain [TextureUsages::TEXTURE_BINDING],  [TextureUsages::COPY_DST] and [TextureUsages::STORAGE_BINDING].
 ///
-pub fn create_image(images: &mut Assets<Image>, params: CreateImageParams) -> Handle<Image> {
+pub fn create_image(params: CreateImageParams) -> Image {
     let CreateImageParams {
         size,
         label,
@@ -254,7 +256,7 @@ pub fn create_image(images: &mut Assets<Image>, params: CreateImageParams) -> Ha
         texture_view_descriptor: None,
     };
     image.resize(image.texture_descriptor.size); // set image data to 0
-    images.add(image)
+    image
 }
 
 #[allow(rustdoc::broken_intra_doc_links)]
@@ -384,7 +386,7 @@ mod tests {
         assert_ne!(initial_size, set_size);
 
         let mut images = app.world.resource_mut::<Assets<Image>>();
-        let image = create_image(&mut images, initial_size.into());
+        let image = images.add(create_image(initial_size.into()));
 
         let pb_id = app
             .world
@@ -424,7 +426,7 @@ mod tests {
         let set_size = UVec2::new(10, 10);
 
         let mut images = app.world.resource_mut::<Assets<Image>>();
-        let image = create_image(&mut images, set_size.into());
+        let image = images.add(create_image(set_size.into()));
 
         let pb_id = app
             .world
@@ -468,7 +470,7 @@ mod tests {
         let fill_area = Vec2::new(10.5, 10.4);
 
         let mut images = app.world.resource_mut::<Assets<Image>>();
-        let image = create_image(&mut images, set_size.into());
+        let image = images.add(create_image(set_size.into()));
 
         let pb_id = app
             .world

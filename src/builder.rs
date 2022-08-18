@@ -233,7 +233,7 @@ fn create_pixel_buffer<'w, 's, 'a>(
     fill: Fill,
     render: Option<RenderConfig>,
 ) -> PixelBufferCommands<'w, 's, 'a> {
-    let image = create_image(images, size.size.into());
+    let image = images.add(create_image(size.size.into()));
 
     if let Some(render) = render {
         match render {
