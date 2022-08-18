@@ -88,7 +88,7 @@ fn insert_pixel_buffer(
         .with_render(false)
         .with_size(SIZE)
         .spawn(commands, images)
-        .init_frame(|frame| {
+        .edit_frame(|frame| {
             let size = frame.size();
             frame.per_pixel(|p, _| {
                 let a = if (p.x + p.y * size.x) % 2 == 0 {

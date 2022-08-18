@@ -178,3 +178,13 @@ impl GetFrameFromHandle for Handle<Image> {
         self
     }
 }
+
+/// Convenience trait to modify elements with a [Frame]
+pub trait FrameEditExtension: GetFrame {
+    /// Runs a given closure to modify the buffer.
+    fn edit_frame(&mut self, f: impl Fn(&mut Frame)) {
+        f(&mut self.frame())
+    }
+}
+
+impl<T: GetFrame> FrameEditExtension for T {}

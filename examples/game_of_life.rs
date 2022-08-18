@@ -29,7 +29,7 @@ fn setup(
         .with_size(size)
         .spawn(&mut commands, &mut images)
         // initialize the game of life with random cells
-        .init_frame(|frame| {
+        .edit_frame(|frame| {
             frame.per_pixel(|_, _| {
                 if rand::random::<f32>() > 0.9 {
                     Pixel::WHITE

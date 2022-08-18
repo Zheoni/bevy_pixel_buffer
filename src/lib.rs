@@ -43,7 +43,7 @@ pub mod prelude {
     pub use crate::compute_shader::{ComputeShader, ComputeShaderPlugin};
     #[cfg(feature = "egui")]
     pub use crate::egui::{EguiTexture, PixelBufferEguiPlugin};
-    pub use crate::frame::{Frame, GetFrame, GetFrameFromHandle};
+    pub use crate::frame::{Frame, FrameEditExtension, GetFrame, GetFrameFromHandle};
     pub use crate::pixel::Pixel;
     pub use crate::pixel_buffer::{
         Fill, FillKind, PixelBuffer, PixelBufferPlugin, PixelBufferPlugins, PixelBufferSize,

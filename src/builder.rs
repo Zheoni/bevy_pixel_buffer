@@ -8,7 +8,7 @@ use std::fmt::Debug;
 use crate::{
     bundle::PixelBufferBundle,
     pixel_buffer::{create_image, Fill, PixelBuffer, PixelBufferSize},
-    prelude::Frame,
+    prelude::{Frame, FrameEditExtension, GetFrame},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*, sprite::Anchor};
 
@@ -316,14 +316,14 @@ pub struct PixelBufferCommands<'w, 's, 'a> {
 }
 
 impl<'w, 's, 'a> PixelBufferCommands<'w, 's, 'a> {
-    /// Gets the frame to edit the buffer.
-    pub fn get_frame(&mut self) -> Frame<'_> {
-        Frame::extract(self.images, &self.image_handle)
-    }
-
-    /// Runs a given closure to initialize the buffer.
-    pub fn init_frame(&'a mut self, f: impl Fn(&mut Frame)) -> &mut Self {
-        f(&mut self.get_frame());
+    /// Runs a given closure to modify the buffer.
+    ///
+    /// This is just to allow chaining a call to [FrameEditExtension::edit_frame].
+    pub fn edit_frame(&mut self, f: impl Fn(&mut Frame)) -> &mut Self
+    where
+        Self: FrameEditExtension,
+    {
+        <Self as FrameEditExtension>::edit_frame(self, f);
         self
     }
 
@@ -340,5 +340,11 @@ impl<'w, 's, 'a> PixelBufferCommands<'w, 's, 'a> {
     /// Returns the [EntityCommands] struct to work with the buffer entity.
     pub fn entity(&mut self) -> &mut EntityCommands<'w, 's, 'a> {
         &mut self.entity_commands
+    }
+}
+
+impl<'w, 's, 'a> GetFrame for PixelBufferCommands<'w, 's, 'a> {
+    fn frame(&mut self) -> Frame<'_> {
+        Frame::extract(self.images, &self.image_handle)
     }
 }
