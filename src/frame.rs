@@ -147,3 +147,34 @@ impl<'a> Frame<'a> {
         Self { pixels, size }
     }
 }
+
+/// Convenience trait to get a frame
+pub trait GetFrame {
+    /// Get a frame to mutate a pixel buffer
+    fn frame(&mut self) -> Frame<'_>;
+}
+
+impl GetFrame for Image {
+    #[inline(always)]
+    fn frame(&mut self) -> Frame<'_> {
+        Frame::get(self)
+    }
+}
+
+/// Convenience trait to get a frame but needs the [Image] [Assets].
+pub trait GetFrameFromHandle {
+    /// Get the associated image handle
+    fn image_handle(&self) -> &Handle<Image>;
+
+    /// Get a frame to mutate a pixel buffer
+    fn frame<'a>(&self, images: &'a mut Assets<Image>) -> Frame<'a> {
+        Frame::extract(images, self.image_handle())
+    }
+}
+
+impl GetFrameFromHandle for Handle<Image> {
+    #[inline(always)]
+    fn image_handle(&self) -> &Handle<Image> {
+        self
+    }
+}

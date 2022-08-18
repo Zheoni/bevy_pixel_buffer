@@ -1,117 +1,164 @@
-//! Adds utility types to use as systems parameters
+//! Adds utility queries
 //!
-//! These are some common queries and resources grouped up, so everything
-//! done here can be replicated with custom queries. You may not
-//! need or want to use them but for quick prototyping they are usefull to
+//! These are common queries and resources grouped up, so everything
+//! done here can be replicated with a normal query. You may not
+//! need or want to use them but for quick prototyping they are useful to
 //! have and not pollute your systems with many and/or complex types.
+//!
+//! [PixelBuffers] is a [WorldQuery] intented for more than one pixel buffer.
+//!
+//! [QueryPixelBuffer] is a [SystemParam] that groups the [PixelBuffers] query and
+//! the [image](Image) [assets](Assets) resource. It has some convenience methods
+//! when working with a single pixel buffer.
+//!
+//! # Examples
+//!
+//! For many pixel buffers
+//! ```
+//! # use bevy::prelude::*;
+//! # use bevy_pixel_buffer::prelude::*;
+//! fn example_system(mut images: ResMut<Assets<Image>>, pixel_buffers: Query<PixelBuffers>) {
+//!     for item in pixel_buffers.iter() {
+//!         item.frame(&mut images).per_pixel(|_, _| Pixel::random())
+//!     }
+//! }
+//! # bevy::ecs::system::assert_is_system(example_system);
+//! ```
+//! Is equivalent to
+//! ```
+//! # use bevy::prelude::*;
+//! # use bevy_pixel_buffer::prelude::*;
+//! fn example_system(pixel_buffers: QueryPixelBuffer) {
+//!     let (query, mut images) = pixel_buffers.split();
+//!     for item in query.iter() {
+//!         item.frame(&mut images).per_pixel(|_, _| Pixel::random())
+//!     }
+//! }
+//! # bevy::ecs::system::assert_is_system(example_system);
+//! ```
+//! ---
+//! For a single pixel buffer
+//!
+//! ```
+//! # use bevy::prelude::*;
+//! # use bevy_pixel_buffer::prelude::*;
+//! fn example_system(mut pb: QueryPixelBuffer) {
+//!     pb.frame().per_pixel(|_, _| Pixel::random());
+//! }
+//! # bevy::ecs::system::assert_is_system(example_system);
+//! ```
 
-use bevy::{ecs::query::QuerySingleError, prelude::*};
+use std::ops::{Deref, DerefMut};
 
-use crate::prelude::{Frame, PixelBuffer};
+use bevy::{
+    ecs::{query::WorldQuery, system::SystemParam},
+    prelude::*,
+};
 
-/// Premade query to work with a pixel buffer
-pub type QueryPixelBuffer<'w, 's, 'a> = (
-    ResMut<'w, Assets<Image>>,
-    Query<'w, 's, (Entity, &'a Handle<Image>), With<PixelBuffer>>,
-);
+use crate::{
+    frame::{Frame, GetFrame, GetFrameFromHandle},
+    pixel_buffer::PixelBuffer,
+};
 
-/// Implemeted by premade queries to get a frame to edit the pixel buffer
-pub trait GetFrame {
-    /// Get a frame to mutate the pixel buffer
-    fn frame(&mut self) -> Frame<'_>;
-}
-
-impl GetFrame for QueryPixelBuffer<'_, '_, '_> {
-    fn frame(&mut self) -> Frame<'_> {
-        let (_, image_handle) = single(self.1.get_single());
-        Frame::extract(&mut self.0, image_handle)
-    }
-}
-
-/// Implemented bu premade queries to get the entity of the pixel buffer
-pub trait GetEntity {
-    /// Gets the entity from the query
-    fn entity(&self) -> Entity;
-}
-
-impl GetEntity for QueryPixelBuffer<'_, '_, '_> {
-    fn entity(&self) -> Entity {
-        single(self.1.get_single()).0
-    }
-}
-
-#[cfg(feature = "egui")]
-mod egui_queries {
-    use crate::egui::EguiTexture;
-    use bevy_egui::egui;
+// #[derive(WorldQuery)] generates structs without documentation, put them inside
+// here to allow that
+mod queries {
+    #![allow(missing_docs)]
 
     use super::*;
+    // cannot use #[cfg(feature = "egui")] inside the derive
 
-    /// Premade query to work with a pixel buffer displayed in egui
-    pub type QueryPixelBufferEgui<'w, 's, 'a> = (
-        ResMut<'w, Assets<Image>>,
-        Query<
-            'w,
-            's,
-            (
-                Entity,
-                &'a Handle<Image>,
-                &'a EguiTexture,
-                &'a mut PixelBuffer,
-            ),
-            With<PixelBuffer>,
-        >,
-    );
-
-    impl GetFrame for QueryPixelBufferEgui<'_, '_, '_> {
-        fn frame(&mut self) -> Frame<'_> {
-            let q = single(self.1.get_single_mut());
-            Frame::extract(&mut self.0, q.1)
-        }
+    #[cfg(not(feature = "egui"))]
+    /// Query to get the pixel buffers
+    ///
+    /// See [module documentation](crate::query).
+    #[derive(WorldQuery)]
+    #[world_query(mutable, derive(Debug))]
+    pub struct PixelBuffers {
+        /// [Entity] of the pixel buffer
+        pub entity: Entity,
+        /// [PixelBuffer] component
+        pub pixel_buffer: &'static mut PixelBuffer,
+        /// Image handle
+        pub image_handle: &'static Handle<Image>,
     }
 
-    impl GetEntity for QueryPixelBufferEgui<'_, '_, '_> {
-        fn entity(&self) -> Entity {
-            single(self.1.get_single()).0
-        }
-    }
-
-    /// Implemented by premade queries to work with a pixel buffer displayed in egui
-    pub trait GetEgui {
-        /// Extracts the egui texture from the query
-        fn egui_texture(&mut self) -> EguiTexture;
-
-        /// Sets the [Fill](crate::pixel_buffer::Fill) to an area given by egui
-        fn update_fill_egui(&mut self, available_saize: egui::Vec2);
-    }
-
-    impl GetEgui for QueryPixelBufferEgui<'_, '_, '_> {
-        fn egui_texture(&mut self) -> EguiTexture {
-            *single(self.1.get_single()).2
-        }
-
-        fn update_fill_egui(&mut self, available_size: egui::Vec2) {
-            if available_size.x == 0.0 || available_size.y == 0.0 {
-                info!("Skipping egui fill update, widht or height are 0");
-                return;
-            }
-            let mut pb = single(self.1.get_single_mut()).3;
-            pb.fill.update_egui(available_size);
-        }
+    #[cfg(feature = "egui")]
+    /// Query to get the pixel buffers.
+    ///
+    /// See [module documentation](crate::query).
+    #[derive(WorldQuery)]
+    #[world_query(mutable, derive(Debug))]
+    pub struct PixelBuffers {
+        /// [Entity] of the pixel buffer
+        pub entity: Entity,
+        /// [PixelBuffer] component
+        pub pixel_buffer: &'static mut PixelBuffer,
+        /// Image handle
+        pub image_handle: &'static Handle<Image>,
+        /// [EguiTexture](crate::egui::EguiTexture) component.
+        ///
+        /// Only available with the `egui` feature.
+        ///
+        /// If the [PixelBufferEguiPlugin](crate::egui::PixelBufferEguiPlugin) is added
+        /// it will always be [Some].
+        pub egui_texture: Option<&'static crate::egui::EguiTexture>,
     }
 }
 
-#[cfg(feature = "egui")]
-pub use egui_queries::*;
+pub use queries::*;
 
-fn single<T>(v: Result<T, QuerySingleError>) -> T {
-    match v {
-        Ok(r) => r,
-        Err(QuerySingleError::MultipleEntities(_)) => {
-            panic!("Cannot use premade query when there are multiple pixel buffers.")
-        }
-        Err(QuerySingleError::NoEntities(_)) => {
-            panic!("No pixel buffer found by premade query.")
-        }
+impl<'w> GetFrameFromHandle for PixelBuffersReadOnlyItem<'w> {
+    fn image_handle(&self) -> &Handle<Image> {
+        self.image_handle
+    }
+}
+
+impl<'w> GetFrameFromHandle for PixelBuffersItem<'w> {
+    fn image_handle(&self) -> &Handle<Image> {
+        self.image_handle
+    }
+}
+
+/// System parameter to use in systems
+#[derive(SystemParam)]
+pub struct QueryPixelBuffer<'w, 's> {
+    pub(crate) query: Query<'w, 's, PixelBuffers>,
+    pub(crate) images: ResMut<'w, Assets<Image>>,
+}
+
+impl<'w, 's> Deref for QueryPixelBuffer<'w, 's> {
+    type Target = Query<'w, 's, PixelBuffers>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.query
+    }
+}
+
+impl<'w, 's> DerefMut for QueryPixelBuffer<'w, 's> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.query
+    }
+}
+
+// Zheoni: Help, I can't make a way to iterate over Frame s... lifetimes
+//   and so many other problems :(
+
+impl<'w, 's> QueryPixelBuffer<'w, 's> {
+    /// Get the image assets resource.
+    pub fn images(&mut self) -> &mut Assets<Image> {
+        &mut self.images
+    }
+
+    /// Gets the query and images resource
+    pub fn split(self) -> (Query<'w, 's, PixelBuffers>, ResMut<'w, Assets<Image>>) {
+        (self.query, self.images)
+    }
+}
+
+impl<'w, 's> GetFrame for QueryPixelBuffer<'w, 's> {
+    fn frame(&mut self) -> Frame<'_> {
+        let image_handle = self.query.single().image_handle;
+        Frame::extract(&mut self.images, image_handle)
     }
 }

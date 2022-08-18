@@ -257,6 +257,7 @@ pub fn create_image(images: &mut Assets<Image>, params: CreateImageParams) -> Ha
     images.add(image)
 }
 
+#[allow(rustdoc::broken_intra_doc_links)]
 /// [Plugin group](PluginGroup) that adds the complete `bevy_pixel_buffer`
 /// suite of plugins:
 /// - [PixelBufferPlugin]
@@ -331,6 +332,7 @@ fn fill(mut pixel_buffer: Query<&mut PixelBuffer>, windows: Res<Windows>) {
 }
 
 /// Changes the sprite custom size
+#[allow(clippy::type_complexity)]
 fn sprite_custom_size(
     mut pixel_buffer: Query<(&PixelBuffer, &mut Sprite), Or<(Changed<PixelBuffer>, Added<Sprite>)>>,
     windows: Res<Windows>,

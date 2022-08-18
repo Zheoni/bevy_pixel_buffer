@@ -8,8 +8,8 @@ use bevy_egui::{
 };
 
 use crate::{
+    pixel::Pixel,
     pixel_buffer::{Fill, FillKind, PixelBuffer, PixelBufferSize},
-    prelude::Pixel,
 };
 
 /// Component inserted by the [PixelBufferEguiPlugin]. Holds all the necesary
@@ -104,5 +104,65 @@ impl Pixel {
             self.b as f32 / 255.0,
             self.a as f32 / 255.0,
         )
+    }
+}
+
+impl crate::query::PixelBuffersItem<'_> {
+    /// Update the [PixelBuffer::fill] to an egui area
+    pub fn update_fill_egui(&mut self, available_size: egui::Vec2) {
+        self.pixel_buffer.fill.update_egui(available_size);
+    }
+
+    /// Gets the [EguiTexture] component of the query item.
+    ///
+    /// This is a shorthand for `item.egui_texture.unwrap()`. The `unwrap` will
+    /// only panic if the [PixelBufferEguiPlugin] is not enabled.
+    ///
+    /// # Panics
+    /// If the entity did not have an [EguiTexture] component because the
+    /// [PixelBufferEguiPlugin] was not added to the app.
+    pub fn egui_texture(&self) -> &EguiTexture {
+        self.egui_texture.unwrap()
+    }
+}
+
+impl crate::query::PixelBuffersReadOnlyItem<'_> {
+    /// Gets the [EguiTexture] component of the query item.
+    ///
+    /// This is a shorthand for `item.egui_texture.unwrap()`. The `unwrap` will
+    /// only panic if the [PixelBufferEguiPlugin] is not enabled.
+    ///
+    /// # Panics
+    /// If the entity did not have an [EguiTexture] component because the
+    /// [PixelBufferEguiPlugin] was not added to the app.
+    pub fn egui_texture(&self) -> &EguiTexture {
+        self.egui_texture.unwrap()
+    }
+}
+
+impl<'w, 's> crate::query::QueryPixelBuffer<'w, 's> {
+    /// Update the [PixelBuffer::fill] to an egui area
+    ///
+    /// # Panics
+    /// If there are none or more than one pixel buffers. This method is
+    /// intented to be used when there's only one pixel buffer.
+    pub fn update_fill_egui(&mut self, available_size: egui::Vec2) {
+        self.query
+            .single_mut()
+            .pixel_buffer
+            .fill
+            .update_egui(available_size);
+    }
+
+    /// Get the [EguiTexture] component.
+    ///
+    /// # Panics
+    /// - If there are none or more than one pixel buffers. This method is
+    /// intented to be used when there's only one pixel buffer.
+    ///
+    /// - If the entity did not have an [EguiTexture] component because the
+    /// [PixelBufferEguiPlugin] was not added to the app.
+    pub fn egui_texture(&self) -> &EguiTexture {
+        self.query.single().egui_texture.unwrap()
     }
 }

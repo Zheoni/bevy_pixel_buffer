@@ -17,7 +17,7 @@ fn main() {
         .run()
 }
 
-fn update(mut egui_context: ResMut<EguiContext>, mut pb: QueryPixelBufferEgui) {
+fn update(mut egui_context: ResMut<EguiContext>, mut pb: QueryPixelBuffer) {
     // update the frame
     pb.frame().per_pixel(|_, _| Pixel::random());
 
