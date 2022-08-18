@@ -1,5 +1,5 @@
 //! Adds integrations with [bevy_egui] and other [egui] types. This modules
-//! requires the `"egui"` feature.
+//! requires the `egui` feature.
 
 use bevy::{math::Vec2, prelude::*};
 use bevy_egui::{

@@ -148,7 +148,7 @@ impl<'a> Frame<'a> {
     }
 }
 
-/// Convenience trait to get a frame
+/// Convenience trait to get a [Frame]
 pub trait GetFrame {
     /// Get a frame to mutate a pixel buffer
     fn frame(&mut self) -> Frame<'_>;
@@ -161,7 +161,7 @@ impl GetFrame for Image {
     }
 }
 
-/// Convenience trait to get a frame but needs the [Image] [Assets].
+/// Convenience trait to get a [Frame] from a [Handle] needs the [image](Image) [assets](Assets).
 pub trait GetFrameFromHandle: AsImageHandle {
     /// Get a frame to mutate a pixel buffer
     fn frame<'a>(&self, images: &'a mut Assets<Image>) -> Frame<'a> {
@@ -171,7 +171,7 @@ pub trait GetFrameFromHandle: AsImageHandle {
 
 impl<T: AsImageHandle> GetFrameFromHandle for T {}
 
-/// Convenience trait to get a frame from the [Image] [Assets]
+/// Convenience trait to get a frame from the [image](Image) [assets](Assets) with a [Handle]
 pub trait GetFrameFromImages: AsMut<Assets<Image>> {
     /// Get a frame to mutate a pixel buffer
     fn frame(&mut self, image_handle: impl AsImageHandle) -> Frame<'_> {
@@ -181,7 +181,7 @@ pub trait GetFrameFromImages: AsMut<Assets<Image>> {
 
 impl<T: AsMut<Assets<Image>>> GetFrameFromImages for T {}
 
-/// Used to get a reference to a image handle.
+/// Used to get a reference to a [image](Image) [handle](Handle).
 ///
 /// This is a workaround until `impl<T> AsRef<T> for &T` is stabilized.
 pub trait AsImageHandle {

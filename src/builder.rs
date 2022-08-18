@@ -1,9 +1,9 @@
 //! Utilities for constructing pixel buffers.
 //!
 //! This adds ergonomic ways to create and render a pixel buffer.
-//! Alternatively [Bundle]s in [crate::bundle] can be used.
-
-use std::fmt::Debug;
+//! Alternatively [PixelBufferBundle] or
+//! [PixelBufferSpriteBundle](crate::bundle::PixelBufferSpriteBundle)
+//! can be used.
 
 use crate::{
     bundle::PixelBufferBundle,
@@ -124,11 +124,12 @@ impl From<RenderConfig> for RenderConfigBuilder {
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_pixel_buffer::builder::PixelBufferBuilder;
-/// fn setup_pb(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+/// fn example_system(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
 ///     PixelBufferBuilder::new()
 ///         .with_size((400, 200))
 ///         .spawn(&mut commands, &mut images);
 /// }
+/// # bevy::ecs::system::assert_is_system(example_system);
 /// ```
 #[derive(Debug, Clone)]
 pub struct PixelBufferBuilder {
@@ -206,6 +207,18 @@ impl PixelBufferBuilder {
     /// The system is the equivalent as the one shown in the [PixelBufferBuilder] example.
     ///
     /// # Example
+    ///
+    /// This is a valid bevy system. Make sure to add it is as a startup system, otherwise
+    /// a new pixel buffer will be created every frame.
+    /// ```
+    /// # use bevy::prelude::*;
+    /// # use bevy_pixel_buffer::prelude::*;
+    /// let system = PixelBufferBuilder::new()
+    ///             .with_size((400, 200))
+    ///             .setup();
+    /// # bevy::ecs::system::assert_is_system(system);
+    /// ```
+    /// It can be used like this:
     /// ```no_run
     /// # use bevy::prelude::*;
     /// # use bevy_pixel_buffer::prelude::*;
@@ -284,6 +297,17 @@ fn create_pixel_buffer<'w, 's, 'a>(
 /// Returns a system that spawns a pixel buffer with the given size.
 ///
 /// # Example
+///
+/// This is a valid bevy system. Make sure to add it is as a startup system, otherwise
+/// a new pixel buffer will be created every frame.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_pixel_buffer::prelude::*;
+/// let system = pixel_buffer_setup((400, 200));
+/// # bevy::ecs::system::assert_is_system(system);
+/// ```
+///
 /// This is equivalent to the application in the [PixelBufferBuilder::setup] example.
 /// ```no_run
 /// # use bevy::prelude::*;

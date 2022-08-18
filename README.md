@@ -50,3 +50,7 @@ fn update(mut pb: QueryPixelBuffer) {
 - `rand`. Enables extra functionality related to random values.
 
 \* Disabled by default.
+
+## Bevy versions
+
+Currently `bevy_pixel_buffer` is only compatible with `bevy` `0.8.0`.

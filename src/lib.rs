@@ -23,6 +23,30 @@
 //!     pb.frame().per_pixel(|_, _| Pixel::random());
 //! }
 //! ```
+//! See other [examples](https://github.com/Zheoni/bevy_pixel_buffer/tree/main/examples).
+//!
+//! ## Quick how to
+//!
+//! ### Create a pixel buffer
+//! Probably [PixelBufferBuilder](crate::builder::PixelBufferBuilder) is your friend, but if you like the
+//! more *bevy like* experience of working with bundles, see the [bundle] module.
+//!
+//! ### Get the pixel buffer in your systems
+//! There are 2 approaches:
+//! - Create your custom bevy queries. A pixel buffer is composed of a
+//! [PixelBuffer](crate::pixel_buffer::PixelBuffer), [Handle<Image>](bevy::asset::Handle) and optionally a
+//! [EguiTexture](crate::egui::EguiTexture) and [Handle<ComputeShader>](bevy::asset::Handle) components.
+//! - Use the premade queries in the [query] module. This exist for quick prototyping and common
+//! queries related to one or more pixel buffers.
+//!
+//! ### Modify a pixel buffer
+//! The data of the pixels lives inside a bevy [Image](bevy::prelude::Image). To edit it exists the
+//! [Frame](crate::frame::Frame) struct. There are many ways to get a [Frame](crate::frame::Frame).
+//!
+//! Once you have a [Frame](crate::frame::Frame) it offers methods to edit the [Pixel](crate::pixel::Pixel)s.
+//! The crate does not offer drawing behaviour (yet) for shapes like triangles, quads or anything like that,
+//! but with [Frame::raw_mut](crate::frame::Frame::raw_mut) you can implement any behaviour you want.
+//!
 
 #![deny(missing_docs)]
 #![deny(rustdoc::broken_intra_doc_links)]
