@@ -1,4 +1,4 @@
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
 use bevy_pixel_buffer::prelude::*;
 
@@ -6,9 +6,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(PixelBufferPlugin)
-        .add_plugin(PixelBufferEguiPlugin)
+        .add_plugins(PixelBufferPlugins)
         .add_startup_system(setup)
         .add_system(update)
         .add_system(delete)
