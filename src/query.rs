@@ -19,7 +19,7 @@
 //! # use bevy_pixel_buffer::prelude::*;
 //! fn example_system(mut images: ResMut<Assets<Image>>, pixel_buffers: Query<PixelBuffers>) {
 //!     for item in pixel_buffers.iter() {
-//!         item.frame(&mut images).per_pixel(|_, _| Pixel::random())
+//!         images.frame(item).per_pixel(|_, _| Pixel::random())
 //!     }
 //! }
 //! # bevy::ecs::system::assert_is_system(example_system);
@@ -31,7 +31,7 @@
 //! fn example_system(pixel_buffers: QueryPixelBuffer) {
 //!     let (query, mut images) = pixel_buffers.split();
 //!     for item in query.iter() {
-//!         item.frame(&mut images).per_pixel(|_, _| Pixel::random())
+//!         images.frame(item).per_pixel(|_, _| Pixel::random())
 //!     }
 //! }
 //! # bevy::ecs::system::assert_is_system(example_system);
@@ -56,7 +56,7 @@ use bevy::{
 };
 
 use crate::{
-    frame::{Frame, GetFrame, GetFrameFromHandle},
+    frame::{AsImageHandle, Frame, GetFrame},
     pixel_buffer::PixelBuffer,
 };
 
@@ -108,14 +108,14 @@ mod queries {
 
 pub use queries::*;
 
-impl<'w> GetFrameFromHandle for PixelBuffersReadOnlyItem<'w> {
-    fn image_handle(&self) -> &Handle<Image> {
+impl AsImageHandle for crate::query::PixelBuffersReadOnlyItem<'_> {
+    fn as_image_hande(&self) -> &Handle<Image> {
         self.image_handle
     }
 }
 
-impl<'w> GetFrameFromHandle for PixelBuffersItem<'w> {
-    fn image_handle(&self) -> &Handle<Image> {
+impl AsImageHandle for crate::query::PixelBuffersItem<'_> {
+    fn as_image_hande(&self) -> &Handle<Image> {
         self.image_handle
     }
 }

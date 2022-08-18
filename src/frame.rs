@@ -162,19 +162,41 @@ impl GetFrame for Image {
 }
 
 /// Convenience trait to get a frame but needs the [Image] [Assets].
-pub trait GetFrameFromHandle {
-    /// Get the associated image handle
-    fn image_handle(&self) -> &Handle<Image>;
-
+pub trait GetFrameFromHandle: AsImageHandle {
     /// Get a frame to mutate a pixel buffer
     fn frame<'a>(&self, images: &'a mut Assets<Image>) -> Frame<'a> {
-        Frame::extract(images, self.image_handle())
+        Frame::extract(images, self.as_image_hande())
     }
 }
 
-impl GetFrameFromHandle for Handle<Image> {
-    #[inline(always)]
-    fn image_handle(&self) -> &Handle<Image> {
+impl<T: AsImageHandle> GetFrameFromHandle for T {}
+
+/// Convenience trait to get a frame from the [Image] [Assets]
+pub trait GetFrameFromImages: AsMut<Assets<Image>> {
+    /// Get a frame to mutate a pixel buffer
+    fn frame(&mut self, image_handle: impl AsImageHandle) -> Frame<'_> {
+        Frame::extract(self.as_mut(), image_handle.as_image_hande())
+    }
+}
+
+impl<T: AsMut<Assets<Image>>> GetFrameFromImages for T {}
+
+/// Used to get a reference to a image handle.
+///
+/// This is a workaround until `impl<T> AsRef<T> for &T` is stabilized.
+pub trait AsImageHandle {
+    /// Get a image handle from the type
+    fn as_image_hande(&self) -> &Handle<Image>;
+}
+
+impl AsImageHandle for Handle<Image> {
+    fn as_image_hande(&self) -> &Handle<Image> {
+        self
+    }
+}
+
+impl AsImageHandle for &Handle<Image> {
+    fn as_image_hande(&self) -> &Handle<Image> {
         self
     }
 }
