@@ -6,6 +6,7 @@
 use std::{borrow::Cow, marker::PhantomData};
 
 use bevy::{
+    asset::Asset,
     prelude::*,
     reflect::TypeUuid,
     render::{
@@ -68,7 +69,9 @@ use crate::pixel_buffer::Fill;
 /// # About the bindings in the shader
 /// The bind group 0 is set up with the texture in binding 0. The bind group 1 is the user bind group. The user bind
 /// groups is provided by the implementation of the [AsBindGroup] trait, probably derivind it.
-pub trait ComputeShader: AsBindGroup + Send + Sync + Clone + TypeUuid + Sized + 'static {
+pub trait ComputeShader:
+    AsBindGroup + Send + Sync + Clone + TypeUuid + Default + Sized + 'static
+{
     /// Shader code to load. Returning [ShaderRef::Default] would result in a panic.
     fn shader() -> ShaderRef;
     /// Entry point of the shader.
@@ -115,6 +118,7 @@ impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
     }
 }
 
+#[derive(Resource)]
 struct ComputeShaderPipeline<S: ComputeShader> {
     pipeline_id: CachedComputePipelineId,
     texture_bind_group_layout: BindGroupLayout,
@@ -174,6 +178,7 @@ impl<S: ComputeShader> FromWorld for ComputeShaderPipeline<S> {
     }
 }
 
+#[derive(Resource)]
 struct InvalidatedImages<S: ComputeShader> {
     invalid: HashSet<Handle<Image>>,
     marker: PhantomData<S>,
@@ -188,6 +193,7 @@ impl<S: ComputeShader> Default for InvalidatedImages<S> {
     }
 }
 
+#[derive(Resource)]
 struct ExtractedShaders<S: ComputeShader> {
     extracted: Vec<(Handle<S>, S)>,
     removed: Vec<Handle<S>>,
@@ -275,7 +281,9 @@ struct PreparedImage<S> {
     marker: PhantomData<S>,
     size: UVec2,
 }
-type PreparedImages<S> = HashMap<Handle<Image>, PreparedImage<S>>;
+
+#[derive(Resource, Default, Deref, DerefMut)]
+struct PreparedImages<S>(HashMap<Handle<Image>, PreparedImage<S>>);
 
 fn prepare_images<S: ComputeShader>(
     mut previous_len: Local<usize>,
@@ -331,7 +339,10 @@ struct PreparedShader<S> {
     user_bind_group: BindGroup,
     marker: PhantomData<S>,
 }
-type PreparedShaders<S> = HashMap<Handle<S>, PreparedShader<S>>;
+
+#[derive(Resource, Default, Deref, DerefMut)]
+struct PreparedShaders<S: Asset + Default>(HashMap<Handle<S>, PreparedShader<S>>);
+
 struct PrepareNextFrameShaders<S: ComputeShader> {
     assets: Vec<(Handle<S>, S)>,
 }
@@ -400,6 +411,7 @@ fn prepare_shader<S: ComputeShader>(
     })
 }
 
+#[derive(Resource)]
 struct ComputeShaderQueue<S: ComputeShader>(Vec<ComputeShaderInfo>, PhantomData<S>);
 struct ComputeShaderInfo {
     texture_bind_group: BindGroup,

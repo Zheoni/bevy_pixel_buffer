@@ -1,6 +1,7 @@
 //! Core systems and components of the pixel buffer library
 
 use bevy::{
+    app::PluginGroupBuilder,
     prelude::*,
     render::{
         render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureUsages},
@@ -267,11 +268,14 @@ pub fn create_image(params: CreateImageParams) -> Image {
 pub struct PixelBufferPlugins;
 
 impl PluginGroup for PixelBufferPlugins {
-    fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
-        group.add(PixelBufferPlugin);
+    fn build(self) -> PluginGroupBuilder {
+        let group = PluginGroupBuilder::start::<Self>();
 
+        let group = group.add(PixelBufferPlugin);
         #[cfg(feature = "egui")]
-        group.add(crate::egui::PixelBufferEguiPlugin);
+        let group = group.add(crate::egui::PixelBufferEguiPlugin);
+
+        group
     }
 }
 
@@ -374,9 +378,11 @@ mod tests {
     fn do_resize_image() {
         let mut app = App::new();
 
-        app.add_plugin(bevy::asset::AssetPlugin)
-            .add_plugin(bevy::window::WindowPlugin)
-            .add_plugin(bevy::render::RenderPlugin);
+        app.add_plugins(MinimalPlugins)
+            .add_plugin(bevy::asset::AssetPlugin::default())
+            .add_plugin(bevy::window::WindowPlugin::default())
+            .add_plugin(bevy::render::RenderPlugin)
+            .add_plugin(bevy::render::texture::ImagePlugin::default());
 
         app.add_system(resize);
 
@@ -390,8 +396,7 @@ mod tests {
 
         let pb_id = app
             .world
-            .spawn()
-            .insert_bundle(PixelBufferBundle {
+            .spawn(PixelBufferBundle {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::none(),
@@ -415,9 +420,10 @@ mod tests {
         let mut app = App::new();
 
         app.add_plugins(MinimalPlugins)
-            .add_plugin(bevy::asset::AssetPlugin)
-            .add_plugin(bevy::window::WindowPlugin)
+            .add_plugin(bevy::asset::AssetPlugin::default())
+            .add_plugin(bevy::window::WindowPlugin::default())
             .add_plugin(bevy::render::RenderPlugin)
+            .add_plugin(bevy::render::texture::ImagePlugin::default())
             .add_plugin(bevy::core_pipeline::CorePipelinePlugin)
             .add_plugin(bevy::sprite::SpritePlugin);
 
@@ -430,8 +436,7 @@ mod tests {
 
         let pb_id = app
             .world
-            .spawn()
-            .insert_bundle(PixelBufferSpriteBundle {
+            .spawn(PixelBufferSpriteBundle {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::none(),
@@ -460,9 +465,11 @@ mod tests {
     fn do_fill() {
         let mut app = App::new();
 
-        app.add_plugin(bevy::asset::AssetPlugin)
-            .add_plugin(bevy::window::WindowPlugin)
-            .add_plugin(bevy::render::RenderPlugin);
+        app.add_plugins(MinimalPlugins)
+            .add_plugin(bevy::asset::AssetPlugin::default())
+            .add_plugin(bevy::window::WindowPlugin::default())
+            .add_plugin(bevy::render::RenderPlugin)
+            .add_plugin(bevy::render::texture::ImagePlugin::default());
 
         app.add_system(fill);
 
@@ -474,8 +481,7 @@ mod tests {
 
         let pb_id = app
             .world
-            .spawn()
-            .insert_bundle(PixelBufferBundle {
+            .spawn(PixelBufferBundle {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
                     fill: Fill::custom(fill_area),

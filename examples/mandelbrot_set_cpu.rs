@@ -144,7 +144,7 @@ fn render(mut pb: QueryPixelBuffer, params: Res<Params>) {
     });
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Resource)]
 struct Params {
     max_iter: i32,
     scale: f64,

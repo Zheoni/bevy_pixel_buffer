@@ -14,6 +14,7 @@ A library to draw pixels in [bevy](https://crates.io/crates/bevy).
 - [egui](https://crates.io/crates/egui) integration (through [bevy_egui](https://crates.io/crates/bevy_egui)) to show the pixels inside the UI.
 
 ## [Examples](./examples/)
+
 A basic example,
 
 ```rust
@@ -45,7 +46,8 @@ fn update(mut pb: QueryPixelBuffer) {
 [More examples](./examples/)
 
 ## Features
-- `egui`*. Egui integration.
+
+- `egui`\*. Egui integration.
 - `rayon`. Enables extra alternative functions that use rayon.
 - `rand`. Enables extra functionality related to random values.
 
@@ -53,4 +55,9 @@ fn update(mut pb: QueryPixelBuffer) {
 
 ## Bevy versions
 
-Currently `bevy_pixel_buffer` is only compatible with `bevy` `0.8.0`.
+Version compatibility table.
+
+| `bevy` | `bevy_pixel_buffer` |
+| ------ | ------------------- |
+| `0.9`  | `0.3`               |
+| `0.8`  | `0.2`               |

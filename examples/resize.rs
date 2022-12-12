@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_pixel_buffer::prelude::*;
 
-#[derive(Deref, DerefMut)]
+#[derive(Deref, DerefMut, Resource)]
 struct ResizeTimer(Timer);
 
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
         .add_startup_system(PixelBufferBuilder::new().with_size(size).setup())
         .add_system(resize)
         .add_system(update)
-        .insert_resource(ResizeTimer(Timer::from_seconds(2.0, true)))
+        .insert_resource(ResizeTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
         .run()
 }
 

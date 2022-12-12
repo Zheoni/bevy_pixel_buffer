@@ -20,6 +20,7 @@ struct MyBuffer {
     id: usize,
 }
 
+#[derive(Resource)]
 struct NextId(usize);
 
 impl NextId {

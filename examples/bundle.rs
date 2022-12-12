@@ -15,14 +15,14 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 
     let size = PixelBufferSize {
         size: UVec2::new(32, 32),
         pixel_size: UVec2::new(16, 16),
     };
 
-    commands.spawn_bundle(PixelBufferSpriteBundle {
+    commands.spawn(PixelBufferSpriteBundle {
         pixel_buffer: PixelBuffer {
             size,
             fill: Fill::none(),

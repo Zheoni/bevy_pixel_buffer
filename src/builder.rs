@@ -184,7 +184,7 @@ impl PixelBufferBuilder {
         commands: &'a mut Commands<'w, 's>,
         images: &'a mut Assets<Image>,
     ) -> PixelBufferCommands<'w, 's, 'a> {
-        let entity = commands.spawn();
+        let entity = commands.spawn(());
         create_pixel_buffer(entity, images, self.size, self.fill, self.render)
     }
 
@@ -256,7 +256,7 @@ fn create_pixel_buffer<'w, 's, 'a>(
             } => {
                 // Spawn a 2D camera if needed
                 if spawn_camera {
-                    entity.commands().spawn_bundle(Camera2dBundle::default());
+                    entity.commands().spawn(Camera2dBundle::default());
                 }
 
                 // Add a sprite with the image as texture
@@ -270,6 +270,7 @@ fn create_pixel_buffer<'w, 's, 'a>(
                         flip_x: sprite_bundle.sprite.flip_x,
                         flip_y: sprite_bundle.sprite.flip_y,
                         anchor: sprite_bundle.sprite.anchor,
+                        rect: None,
                     },
                     texture: image.clone(),
                     transform: sprite_bundle.transform,
@@ -277,12 +278,12 @@ fn create_pixel_buffer<'w, 's, 'a>(
                     visibility: sprite_bundle.visibility,
                     computed_visibility: sprite_bundle.computed_visibility,
                 };
-                entity.insert_bundle(sprite_bundle);
+                entity.insert(sprite_bundle);
             }
         }
     }
 
-    entity.insert_bundle(PixelBufferBundle {
+    entity.insert(PixelBufferBundle {
         pixel_buffer: PixelBuffer { size, fill },
         image: image.clone(),
     });
