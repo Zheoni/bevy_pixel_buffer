@@ -14,8 +14,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PixelBufferPlugin)
         .add_startup_system(PixelBufferBuilder::new().with_size(size).setup())
-        .add_system(resize)
         .add_system(update)
+        .add_system(resize.after(update))
         .insert_resource(ResizeTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
         .run()
 }
