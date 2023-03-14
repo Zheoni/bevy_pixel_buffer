@@ -348,7 +348,7 @@ fn fill(
 /// Changes the sprite custom size
 #[allow(clippy::type_complexity)]
 fn sprite_custom_size(
-    mut pixel_buffer: Query<(&PixelBuffer, &mut Sprite), Or<(Changed<PixelBuffer>, Added<Sprite>)>>,
+    mut pixel_buffer: Query<(&PixelBuffer, &mut Sprite)>,
     primary_window: Query<&Window, With<PrimaryWindow>>,
 ) {
     for (pb, mut sprite) in pixel_buffer.iter_mut() {
@@ -362,8 +362,12 @@ fn sprite_custom_size(
             }
         }
 
-        info!("Resizing sprite to: {:?}", new_size);
-        sprite.custom_size = Some(new_size);
+        let new_size = Some(new_size);
+        // Make sure to not implicitly deref as mut
+        if new_size != sprite.as_ref().custom_size {
+            info!("Resizing sprite to: {:?}", new_size);
+            sprite.custom_size = new_size;
+        }
     }
 }
 
