@@ -7,7 +7,7 @@ use bevy::{
         render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureUsages},
         texture::ImageSampler,
     },
-    window::WindowId,
+    window::PrimaryWindow,
 };
 
 use crate::prelude::Pixel;
@@ -47,7 +47,7 @@ pub enum FillKind {
     /// Fill disabled
     None,
     /// Fill a window
-    Window(WindowId),
+    Window,
     /// Fill a customs size
     Custom(Vec2),
 }
@@ -74,7 +74,7 @@ impl Fill {
     /// Fill the primary window
     pub fn window() -> Self {
         Self {
-            kind: FillKind::Window(WindowId::primary()),
+            kind: FillKind::Window,
             ..Default::default()
         }
     }
@@ -251,6 +251,7 @@ pub fn create_image(params: CreateImageParams) -> Image {
             dimension: TextureDimension::D2,
             format: Pixel::FORMAT,
             usage,
+            view_formats: &[],
         },
         data: vec![],
         sampler_descriptor,
@@ -284,9 +285,13 @@ pub struct PixelBufferPlugin;
 
 impl Plugin for PixelBufferPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::PreUpdate, fill)
-            .add_system_to_stage(CoreStage::PreUpdate, resize.after(fill))
-            .add_system_to_stage(CoreStage::PreUpdate, sprite_custom_size.after(fill));
+        app.add_system(fill.in_base_set(CoreSet::PreUpdate))
+            .add_system(resize.after(fill).in_base_set(CoreSet::PreUpdate))
+            .add_system(
+                sprite_custom_size
+                    .after(fill)
+                    .in_base_set(CoreSet::PreUpdate),
+            );
     }
 }
 
@@ -321,9 +326,12 @@ fn resize(
 }
 
 /// Changes the size of the pixel buffer to match the fill
-fn fill(mut pixel_buffer: Query<&mut PixelBuffer>, windows: Res<Windows>) {
+fn fill(
+    mut pixel_buffer: Query<&mut PixelBuffer>,
+    primary_window: Query<&Window, With<PrimaryWindow>>,
+) {
     for mut pb in pixel_buffer.iter_mut() {
-        if let Some(fill_area) = get_fill_area(&pb, &windows) {
+        if let Some(fill_area) = get_fill_area(&pb, primary_window.get_single().ok()) {
             let PixelBuffer { size, fill } = pb.as_ref();
 
             let new_buffer_size = fill_area.as_uvec2() / size.pixel_size;
@@ -341,7 +349,7 @@ fn fill(mut pixel_buffer: Query<&mut PixelBuffer>, windows: Res<Windows>) {
 #[allow(clippy::type_complexity)]
 fn sprite_custom_size(
     mut pixel_buffer: Query<(&PixelBuffer, &mut Sprite), Or<(Changed<PixelBuffer>, Added<Sprite>)>>,
-    windows: Res<Windows>,
+    primary_window: Query<&Window, With<PrimaryWindow>>,
 ) {
     for (pb, mut sprite) in pixel_buffer.iter_mut() {
         let mut new_size = pb.size.screen_size().as_vec2();
@@ -349,7 +357,7 @@ fn sprite_custom_size(
         // if the sprite needs to stretch
         if pb.fill.stretch {
             // set its size to the fill area
-            if let Some(fill_area) = get_fill_area(pb, &windows) {
+            if let Some(fill_area) = get_fill_area(pb, primary_window.get_single().ok()) {
                 new_size = fill_area;
             }
         }
@@ -359,12 +367,10 @@ fn sprite_custom_size(
     }
 }
 
-fn get_fill_area(pb: &PixelBuffer, windows: &Windows) -> Option<Vec2> {
+fn get_fill_area(pb: &PixelBuffer, window: Option<&Window>) -> Option<Vec2> {
     match pb.fill.kind {
         FillKind::None => None,
-        FillKind::Window(window_id) => windows
-            .get(window_id)
-            .map(|window| Vec2::new(window.width(), window.height())),
+        FillKind::Window => window.map(|window| Vec2::new(window.width(), window.height())),
         FillKind::Custom(custom_size) => Some(custom_size),
     }
 }
@@ -381,7 +387,7 @@ mod tests {
         app.add_plugins(MinimalPlugins)
             .add_plugin(bevy::asset::AssetPlugin::default())
             .add_plugin(bevy::window::WindowPlugin::default())
-            .add_plugin(bevy::render::RenderPlugin)
+            .add_plugin(bevy::render::RenderPlugin::default())
             .add_plugin(bevy::render::texture::ImagePlugin::default());
 
         app.add_system(resize);
@@ -422,7 +428,7 @@ mod tests {
         app.add_plugins(MinimalPlugins)
             .add_plugin(bevy::asset::AssetPlugin::default())
             .add_plugin(bevy::window::WindowPlugin::default())
-            .add_plugin(bevy::render::RenderPlugin)
+            .add_plugin(bevy::render::RenderPlugin::default())
             .add_plugin(bevy::render::texture::ImagePlugin::default())
             .add_plugin(bevy::core_pipeline::CorePipelinePlugin)
             .add_plugin(bevy::sprite::SpritePlugin);
@@ -468,7 +474,7 @@ mod tests {
         app.add_plugins(MinimalPlugins)
             .add_plugin(bevy::asset::AssetPlugin::default())
             .add_plugin(bevy::window::WindowPlugin::default())
-            .add_plugin(bevy::render::RenderPlugin)
+            .add_plugin(bevy::render::RenderPlugin::default())
             .add_plugin(bevy::render::texture::ImagePlugin::default());
 
         app.add_system(fill);

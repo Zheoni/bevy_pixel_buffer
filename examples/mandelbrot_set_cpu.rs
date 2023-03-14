@@ -5,7 +5,7 @@ use bevy::{
 };
 use bevy_egui::{
     egui::{self, RichText},
-    EguiContext, EguiPlugin,
+    EguiContexts, EguiPlugin,
 };
 use bevy_pixel_buffer::prelude::*;
 
@@ -53,11 +53,7 @@ fn process_input(mut params: ResMut<Params>, keyboard_input: Res<Input<KeyCode>>
     }
 }
 
-fn ui(
-    mut egui_ctx: ResMut<EguiContext>,
-    diagnostics: Res<Diagnostics>,
-    mut params: ResMut<Params>,
-) {
+fn ui(mut egui_ctx: EguiContexts, diagnostics: Res<Diagnostics>, mut params: ResMut<Params>) {
     let params = params.as_mut();
     let fps = diagnostics
         .get(FrameTimeDiagnosticsPlugin::FPS)

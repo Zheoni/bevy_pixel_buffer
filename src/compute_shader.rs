@@ -15,7 +15,7 @@ use bevy::{
         render_resource::*,
         renderer::RenderDevice,
         texture::FallbackImage,
-        Extract, RenderApp, RenderStage,
+        Extract, RenderApp, RenderSet,
     },
     utils::{HashMap, HashSet},
 };
@@ -105,15 +105,13 @@ impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
                 .init_resource::<PreparedShaders<S>>()
                 .init_resource::<PreparedImages<S>>()
                 .init_resource::<ComputeShaderPipeline<S>>()
-                .add_system_to_stage(RenderStage::Extract, cs_extract::<S>)
-                .add_system_to_stage(RenderStage::Prepare, prepare_images::<S>)
-                .add_system_to_stage(RenderStage::Prepare, prepare_shaders::<S>)
-                .add_system_to_stage(RenderStage::Queue, cs_queue_bind_group::<S>);
+                .add_system(cs_extract::<S>.in_schedule(ExtractSchedule))
+                .add_system(prepare_images::<S>.in_set(RenderSet::Prepare))
+                .add_system(prepare_shaders::<S>.in_set(RenderSet::Prepare))
+                .add_system(cs_queue_bind_group::<S>.in_set(RenderSet::Queue));
             let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
             render_graph.add_node("user_cs", ComputeShaderNode::<S>::default());
-            render_graph
-                .add_node_edge("user_cs", bevy::render::main_graph::node::CAMERA_DRIVER)
-                .expect("extend bevy render graph with compute shader plugin");
+            render_graph.add_node_edge("user_cs", bevy::render::main_graph::node::CAMERA_DRIVER);
         }
     }
 }
@@ -160,13 +158,14 @@ impl<S: ComputeShader> FromWorld for ComputeShaderPipeline<S> {
             user_bind_group_layout.clone(),
         ];
 
-        let mut pipeline_cache = world.resource_mut::<PipelineCache>();
+        let pipeline_cache = world.resource_mut::<PipelineCache>();
         let pipeline_id = pipeline_cache.queue_compute_pipeline(ComputePipelineDescriptor {
             label: None,
-            layout: Some(layout),
+            layout: layout,
             shader,
             shader_defs: vec![],
             entry_point,
+            push_constant_ranges: vec![],
         });
 
         ComputeShaderPipeline {
@@ -490,7 +489,7 @@ impl<S: ComputeShader> render_graph::Node for ComputeShaderNode<S> {
         }
 
         let mut pass = render_context
-            .command_encoder
+            .command_encoder()
             .begin_compute_pass(&ComputePassDescriptor::default());
 
         let shader_queue = world.resource::<ComputeShaderQueue<S>>();

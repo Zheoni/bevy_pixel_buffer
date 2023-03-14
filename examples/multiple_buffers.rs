@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext, EguiPlugin};
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_pixel_buffer::prelude::*;
 
 fn main() {
@@ -46,7 +46,7 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>, mut id: ResM
 
 fn update(
     mut commands: Commands,
-    mut egui_context: ResMut<EguiContext>,
+    mut egui_context: EguiContexts,
     mut images: ResMut<Assets<Image>>,
     mut buffers: Query<(&mut MyBuffer, &EguiTexture)>,
     mut id: ResMut<NextId>,

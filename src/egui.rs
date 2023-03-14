@@ -4,7 +4,7 @@
 use bevy::{math::Vec2, prelude::*};
 use bevy_egui::{
     egui::{self, Color32},
-    EguiContext,
+    EguiContexts,
 };
 
 use crate::{
@@ -25,30 +25,43 @@ pub struct EguiTexture {
 /// Plugin that adds a [EguiTexture] component to all pixel buffers and keeps them up to date
 pub struct PixelBufferEguiPlugin;
 
+/// A special base set running between [`CoreSet::PreUpdateFlush`] and [`CoreSet::Update`]
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
+pub enum PixelBufferEguiSet {
+    /// Registers Egui textures to their pixel buffers and updates their size
+    Egui,
+    /// The copy of [`apply_system_buffers`] that runs immediately after `Egui`.
+    EguiFlush,
+}
+
 impl Plugin for PixelBufferEguiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_stage_after(
-            CoreStage::PreUpdate, // So EguiTexture updates after pixel buffer is done, but before user updates the frame
-            "pixel_buffer_egui",
-            SystemStage::single_threaded(),
-        )
-        .add_system_to_stage("pixel_buffer_egui", register_egui)
-        .add_system_to_stage(
-            "pixel_buffer_egui",
-            update_egui_texture_size.after(register_egui),
+        app.configure_sets(
+            (PixelBufferEguiSet::Egui, PixelBufferEguiSet::EguiFlush)
+                .chain()
+                .after(CoreSet::PreUpdateFlush)
+                .before(CoreSet::Update),
         );
+        app.add_system(register_egui.in_base_set(PixelBufferEguiSet::Egui));
+        app.add_system(
+            update_egui_texture_size
+                .after(register_egui)
+                .in_base_set(PixelBufferEguiSet::Egui),
+        );
+        app.add_system(apply_system_buffers.in_base_set(PixelBufferEguiSet::EguiFlush));
     }
 }
 
 #[allow(clippy::type_complexity)]
 fn register_egui(
     mut commands: Commands,
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_contexts: EguiContexts,
     pixel_buffer: Query<(Entity, &PixelBuffer, &Handle<Image>), Added<Handle<Image>>>,
 ) {
     for (entity, pb, image_handle) in pixel_buffer.iter() {
         let texture = EguiTexture {
-            id: egui_ctx.add_image(image_handle.clone_weak()),
+            id: egui_contexts.add_image(image_handle.clone_weak()),
             size: pb.size.egui_texture_size(),
         };
         commands.entity(entity).insert(texture);
