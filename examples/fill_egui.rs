@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext, EguiPlugin};
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_pixel_buffer::prelude::*;
 
 fn main() {
@@ -17,7 +17,7 @@ fn main() {
         .run()
 }
 
-fn update(mut egui_context: ResMut<EguiContext>, mut pb: QueryPixelBuffer) {
+fn update(mut egui_context: EguiContexts, mut pb: QueryPixelBuffer) {
     // update the frame
     pb.frame().per_pixel(|_, _| Pixel::random());
 

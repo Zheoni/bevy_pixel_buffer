@@ -1,6 +1,6 @@
 [package]
 name = "bevy_pixel_buffer"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 authors = ["Francisco J. Sánchez <zheoni@outlook.es>"]
 description = "A library to draw pixels in bevy"
@@ -21,15 +21,15 @@ rayon = ["dep:rayon"]
 rand = ["dep:rand"]
 
 [dependencies]
-bevy_egui = { version = "0.18", optional = true }
-bytemuck = { version = "1.10", features = ["derive"] }
+bevy_egui = { version = "0.20", optional = true }
+bytemuck = { version = "1.13", features = ["derive"] }
 log = "0.4"
 rand = {version = "0.8", optional = true }
 rayon = { version = "1.5", optional = true }
 thiserror = "1.0"
 
 [dependencies.bevy]
-version = "0.9"
+version = "0.10"
 default-features = false
 features = [
     "bevy_render",
@@ -39,7 +39,7 @@ features = [
 ]
 
 [dev-dependencies.bevy]
-version = "0.9"
+version = "0.10"
 default-features = false
 features = [
     "x11",

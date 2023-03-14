@@ -59,5 +59,6 @@ Version compatibility table.
 
 | `bevy` | `bevy_pixel_buffer` |
 | ------ | ------------------- |
+| `0.10` | `0.4`               |
 | `0.9`  | `0.3`               |
 | `0.8`  | `0.2`               |

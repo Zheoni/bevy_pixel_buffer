@@ -1,3 +1,7 @@
+# 0.4.0
+
+Update to `bevy` `0.10`.
+
 # 0.3.0
 
 Update to `bevy` `0.9`.

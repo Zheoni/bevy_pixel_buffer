@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_egui::{
     egui::{self, RichText},
-    EguiContext, EguiPlugin,
+    EguiContexts, EguiPlugin,
 };
 use bevy_pixel_buffer::prelude::*;
 
@@ -66,7 +66,7 @@ fn process_input(
 }
 
 fn ui(
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: EguiContexts,
     pb: Query<&Handle<MandelbrotSetShader>>,
     mut cs: ResMut<Assets<MandelbrotSetShader>>,
     diagnostics: Res<Diagnostics>,
