@@ -34,8 +34,10 @@
 //! ### Get the pixel buffer in your systems
 //! There are 2 approaches:
 //! - Create your custom bevy queries. A pixel buffer is composed of a
-//! [PixelBuffer](crate::pixel_buffer::PixelBuffer), [Handle<Image>](bevy::asset::Handle) and optionally a
-//! [EguiTexture](crate::egui::EguiTexture) and [Handle<ComputeShader>](bevy::asset::Handle) components.
+//! [PixelBuffer](crate::pixel_buffer::PixelBuffer),
+//! [Handle](bevy::asset::Handle)<[Image](bevy::render::prelude::Image)> and optionally a
+//! [EguiTexture](crate::egui::EguiTexture) and
+//! [Handle](bevy::asset::Handle)<[ComputeShader](crate::compute_shader::ComputeShader)> components.
 //! - Use the premade queries in the [query] module. This exist for quick prototyping and common
 //! queries related to one or more pixel buffers.
 //!
@@ -49,7 +51,7 @@
 //!
 
 #![deny(missing_docs)]
-#![deny(rustdoc::broken_intra_doc_links)]
+#![warn(rustdoc::broken_intra_doc_links)]
 
 pub mod builder;
 pub mod bundle;

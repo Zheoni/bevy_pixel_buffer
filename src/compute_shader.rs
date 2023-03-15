@@ -161,7 +161,7 @@ impl<S: ComputeShader> FromWorld for ComputeShaderPipeline<S> {
         let pipeline_cache = world.resource_mut::<PipelineCache>();
         let pipeline_id = pipeline_cache.queue_compute_pipeline(ComputePipelineDescriptor {
             label: None,
-            layout: layout,
+            layout,
             shader,
             shader_defs: vec![],
             entry_point,

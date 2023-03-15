@@ -63,8 +63,6 @@ use crate::{
 // #[derive(WorldQuery)] generates structs without documentation, put them inside
 // here to allow that
 mod queries {
-    #![allow(missing_docs)]
-
     use super::*;
     // cannot use #[cfg(feature = "egui")] inside the derive
 

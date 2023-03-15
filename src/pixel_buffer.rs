@@ -278,7 +278,6 @@ pub fn create_image(params: CreateImageParams) -> Image {
     image
 }
 
-#[allow(rustdoc::broken_intra_doc_links)]
 /// [Plugin group](PluginGroup) that adds the complete `bevy_pixel_buffer`
 /// suite of plugins:
 /// - [PixelBufferPlugin]
@@ -286,6 +285,7 @@ pub fn create_image(params: CreateImageParams) -> Image {
 pub struct PixelBufferPlugins;
 
 impl PluginGroup for PixelBufferPlugins {
+    #[allow(clippy::let_and_return)]
     fn build(self) -> PluginGroupBuilder {
         let group = PluginGroupBuilder::start::<Self>();
 

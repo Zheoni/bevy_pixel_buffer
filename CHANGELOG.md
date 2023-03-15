@@ -1,6 +1,8 @@
 # 0.4.0
 
 Update to `bevy` `0.10`.
+- Fix issues with stretching.
+- Add `Fill::stretch`.
 
 # 0.3.0
 

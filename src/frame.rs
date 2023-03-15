@@ -20,7 +20,7 @@ impl<'a> Frame<'a> {
 
     /// Access the pixels directly mutable
     pub fn raw_mut(&mut self) -> &mut [Pixel] {
-        &mut self.pixels
+        self.pixels
     }
 
     /// Gets the frame size

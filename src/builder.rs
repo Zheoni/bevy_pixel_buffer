@@ -79,7 +79,7 @@ impl RenderConfig {
 
 /// Helper type to allow easy [RenderConfig] conversions inside the [PixelBufferBuilder].
 ///
-/// It only wraps an [Option<RenderConfig>].
+/// It only wraps an `Option<RenderConfig>`.
 ///
 /// From a [RenderConfig] value, it will wrap it in [Some].
 ///

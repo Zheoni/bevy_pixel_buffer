@@ -19,4 +19,4 @@ Example | Description
 Example | Description
 --- | ---
 [basic_egui](./basic_egui.rs) |  Basic setup to just draw inside egui.
-[fill_egui](./fill_egui.rs) | Dynamically resize the pixel buffer to fill an egui aera.
+[fill_egui](./fill_egui.rs) | Dynamically resize the pixel buffer to fill an egui aera. The pixels also stretch.
