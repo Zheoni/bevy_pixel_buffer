@@ -72,6 +72,12 @@ fn update_egui_texture_size(
     mut pixel_buffer: Query<(&PixelBuffer, &mut EguiTexture), Changed<PixelBuffer>>,
 ) {
     for (pb, mut texture) in pixel_buffer.iter_mut() {
+        if pb.fill.stretch {
+            if let Some(fill_area) = crate::pixel_buffer::get_fill_area(pb, None) {
+                texture.size = egui::Vec2::new(fill_area.x, fill_area.y);
+                continue;
+            }
+        }
         texture.size = pb.size.egui_texture_size();
     }
 }

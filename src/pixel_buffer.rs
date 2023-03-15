@@ -71,6 +71,23 @@ impl Fill {
         }
     }
 
+    /// Fill disabled but stretch enabled for the future.
+    ///
+    /// This can be useful to set up an app with `egui` because
+    /// [Fill::update_egui] enables the filling later automatically.
+    ///
+    /// At the end it's an alias `Fill::none().with_stretch(true)`.
+    /// ```
+    /// # use bevy_pixel_buffer::pixel_buffer::Fill;
+    /// assert_eq!(Fill::stretch(), Fill::none().with_stretch(true));
+    /// ```
+    pub fn stretch() -> Self {
+        Self {
+            stretch: true,
+            ..Default::default()
+        }
+    }
+
     /// Fill the primary window
     pub fn window() -> Self {
         Self {
@@ -371,7 +388,7 @@ fn sprite_custom_size(
     }
 }
 
-fn get_fill_area(pb: &PixelBuffer, window: Option<&Window>) -> Option<Vec2> {
+pub(crate) fn get_fill_area(pb: &PixelBuffer, window: Option<&Window>) -> Option<Vec2> {
     match pb.fill.kind {
         FillKind::None => None,
         FillKind::Window => window.map(|window| Vec2::new(window.width(), window.height())),

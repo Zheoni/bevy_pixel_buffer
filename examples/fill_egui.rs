@@ -9,8 +9,9 @@ fn main() {
         .add_plugins(PixelBufferPlugins)
         .add_startup_system(
             PixelBufferBuilder::new()
-                .with_size(PixelBufferSize::pixel_size((16, 16)))
+                .with_size(PixelBufferSize::pixel_size((32, 32)))
                 .with_render(false) // disable rendering, as we'll do in it egui
+                .with_fill(Fill::stretch()) // Pixels will stretch to fill the area
                 .setup(),
         )
         .add_system(update)
