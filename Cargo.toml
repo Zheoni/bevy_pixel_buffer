@@ -23,7 +23,6 @@ rand = ["dep:rand"]
 [dependencies]
 bevy_egui = { version = "0.20", optional = true }
 bytemuck = { version = "1.13", features = ["derive"] }
-log = "0.4"
 rand = {version = "0.8", optional = true }
 rayon = { version = "1.5", optional = true }
 thiserror = "1.0"
