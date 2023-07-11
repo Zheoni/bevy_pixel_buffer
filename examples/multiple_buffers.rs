@@ -4,12 +4,9 @@ use bevy_pixel_buffer::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(EguiPlugin)
-        .add_plugins(PixelBufferPlugins)
-        .add_startup_system(setup)
-        .add_system(update)
-        .add_system(delete)
+        .add_plugins((DefaultPlugins, EguiPlugin, PixelBufferPlugins))
+        .add_systems(Startup, setup)
+        .add_systems(Update, (update, delete))
         .insert_resource(NextId(1))
         .run()
 }

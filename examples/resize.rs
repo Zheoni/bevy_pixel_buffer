@@ -11,13 +11,20 @@ fn main() {
     };
 
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(PixelBufferPlugin)
-        .add_startup_system(PixelBufferBuilder::new().with_size(size).setup())
-        .add_system(update)
-        .add_system(resize.after(update))
+        .add_plugins((DefaultPlugins, PixelBufferPlugin))
+        .add_systems(Startup, PixelBufferBuilder::new().with_size(size).setup())
+        // Resize applies at the beginning of next frame, update the image and
+        // prepare the resize for the next frame
+        .add_systems(Update, (update, resize).chain())
         .insert_resource(ResizeTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
         .run()
+}
+
+// update pixels when pixel buffer changes
+fn update(image: Query<&Handle<Image>, Changed<PixelBuffer>>, mut images: ResMut<Assets<Image>>) {
+    if let Ok(image) = image.get_single() {
+        Frame::extract(&mut images, image).per_pixel(|_, _| Pixel::random());
+    }
 }
 
 fn resize(
@@ -42,12 +49,5 @@ fn resize(
             }
         };
         *toggle = !*toggle;
-    }
-}
-
-// update pixels when pixel buffer changes
-fn update(image: Query<&Handle<Image>, Changed<PixelBuffer>>, mut images: ResMut<Assets<Image>>) {
-    if let Ok(image) = image.get_single() {
-        Frame::extract(&mut images, image).per_pixel(|_, _| Pixel::random());
     }
 }

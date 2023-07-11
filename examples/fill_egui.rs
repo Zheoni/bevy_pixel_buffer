@@ -4,17 +4,16 @@ use bevy_pixel_buffer::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(EguiPlugin)
-        .add_plugins(PixelBufferPlugins)
-        .add_startup_system(
+        .add_plugins((DefaultPlugins, EguiPlugin, PixelBufferPlugins))
+        .add_systems(
+            Startup,
             PixelBufferBuilder::new()
                 .with_size(PixelBufferSize::pixel_size((32, 32)))
                 .with_render(false) // disable rendering, as we'll do in it egui
                 .with_fill(Fill::stretch()) // Pixels will stretch to fill the area
                 .setup(),
         )
-        .add_system(update)
+        .add_systems(Update, update)
         .run()
 }
 

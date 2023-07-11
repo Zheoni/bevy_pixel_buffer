@@ -1,5 +1,5 @@
 use bevy::{
-    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     math::{DVec2, DVec4},
     prelude::*,
 };
@@ -11,19 +11,21 @@ use bevy_pixel_buffer::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(EguiPlugin)
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(PixelBufferPlugin)
-        .add_startup_system(
+        .add_plugins((
+            DefaultPlugins,
+            EguiPlugin,
+            FrameTimeDiagnosticsPlugin::default(),
+            PixelBufferPlugin,
+        ))
+        .add_systems(
+            Startup,
             PixelBufferBuilder::new()
                 .with_size((1280, 720))
                 .with_fill(Fill::window().with_stretch(true))
                 .setup(),
         )
-        .add_system(process_input)
-        .add_system(ui)
-        .add_system(render.after(process_input))
+        .add_systems(Update, (process_input, ui))
+        .add_systems(Update, render.after(process_input))
         .insert_resource(Params::default())
         .run()
 }
@@ -53,7 +55,7 @@ fn process_input(mut params: ResMut<Params>, keyboard_input: Res<Input<KeyCode>>
     }
 }
 
-fn ui(mut egui_ctx: EguiContexts, diagnostics: Res<Diagnostics>, mut params: ResMut<Params>) {
+fn ui(mut egui_ctx: EguiContexts, diagnostics: Res<DiagnosticsStore>, mut params: ResMut<Params>) {
     let params = params.as_mut();
     let fps = diagnostics
         .get(FrameTimeDiagnosticsPlugin::FPS)

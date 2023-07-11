@@ -1,7 +1,7 @@
 use bevy::{
-    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     render::render_resource::{AsBindGroup, ShaderRef, ShaderType},
 };
 use bevy_egui::{
@@ -12,14 +12,15 @@ use bevy_pixel_buffer::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(EguiPlugin)
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(PixelBufferPlugin)
-        .add_plugin(ComputeShaderPlugin::<MandelbrotSetShader>::default())
-        .add_startup_system(setup)
-        .add_system(process_input)
-        .add_system(ui)
+        .add_plugins((
+            DefaultPlugins,
+            EguiPlugin,
+            FrameTimeDiagnosticsPlugin::default(),
+            PixelBufferPlugin,
+            ComputeShaderPlugin::<MandelbrotSetShader>::default(),
+        ))
+        .add_systems(Startup, setup)
+        .add_systems(Update, (process_input, ui))
         .run()
 }
 
@@ -69,7 +70,7 @@ fn ui(
     mut egui_ctx: EguiContexts,
     pb: Query<&Handle<MandelbrotSetShader>>,
     mut cs: ResMut<Assets<MandelbrotSetShader>>,
-    diagnostics: Res<Diagnostics>,
+    diagnostics: Res<DiagnosticsStore>,
 ) {
     let params = &mut cs.get_mut(pb.single()).unwrap().params;
     let fps = diagnostics
@@ -116,7 +117,7 @@ fn ui(
     });
 }
 
-#[derive(AsBindGroup, TypeUuid, Clone, Debug, Default)]
+#[derive(AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
 #[uuid = "f690fdae-d598-45ab-8225-97e2a3f056e0"]
 struct MandelbrotSetShader {
     #[uniform(0)]

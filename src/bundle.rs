@@ -40,6 +40,5 @@ pub struct PixelBufferSpriteBundle {
     ///
     /// [SpriteBundle::texture] underlying image should be obtained from [create_image](crate::pixel_buffer::create_image).
     /// [Sprite::custom_size] in [SpriteBundle::sprite] will be ignored. To set a size modify [PixelBuffer::size].
-    #[bundle]
     pub sprite_bundle: SpriteBundle,
 }

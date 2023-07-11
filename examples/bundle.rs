@@ -7,10 +7,9 @@ use bevy_pixel_buffer::{
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(PixelBufferPlugin)
-        .add_startup_system(setup)
-        .add_system(update)
+        .add_plugins((DefaultPlugins, PixelBufferPlugin))
+        .add_systems(Startup, setup)
+        .add_systems(Update, update)
         .run()
 }
 

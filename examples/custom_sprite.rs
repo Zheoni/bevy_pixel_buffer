@@ -11,9 +11,9 @@ fn main() {
     };
 
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(PixelBufferPlugin)
-        .add_startup_system(
+        .add_plugins((DefaultPlugins, PixelBufferPlugin))
+        .add_systems(
+            Startup,
             PixelBufferBuilder::new()
                 .with_size(size)
                 .with_render(RenderConfig::Sprite {
@@ -29,7 +29,7 @@ fn main() {
                 })
                 .setup(),
         )
-        .add_system(update)
+        .add_systems(Update, update)
         .run()
 }
 

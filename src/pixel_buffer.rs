@@ -302,13 +302,8 @@ pub struct PixelBufferPlugin;
 
 impl Plugin for PixelBufferPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(fill.in_base_set(CoreSet::PreUpdate))
-            .add_system(resize.after(fill).in_base_set(CoreSet::PreUpdate))
-            .add_system(
-                sprite_custom_size
-                    .after(fill)
-                    .in_base_set(CoreSet::PreUpdate),
-            );
+        app.add_systems(PreUpdate, fill)
+            .add_systems(PreUpdate, (resize, sprite_custom_size).after(fill));
     }
 }
 
@@ -406,12 +401,11 @@ mod tests {
         let mut app = App::new();
 
         app.add_plugins(MinimalPlugins)
-            .add_plugin(bevy::asset::AssetPlugin::default())
-            .add_plugin(bevy::window::WindowPlugin::default())
-            .add_plugin(bevy::render::RenderPlugin::default())
-            .add_plugin(bevy::render::texture::ImagePlugin::default());
+            .add_plugins(bevy::asset::AssetPlugin::default())
+            .add_plugins(bevy::window::WindowPlugin::default())
+            .add_plugins(bevy::render::texture::ImagePlugin::default());
 
-        app.add_system(resize);
+        app.add_systems(Update, resize);
 
         let initial_size = UVec2::new(5, 5);
         let set_size = UVec2::new(10, 10);
@@ -447,14 +441,13 @@ mod tests {
         let mut app = App::new();
 
         app.add_plugins(MinimalPlugins)
-            .add_plugin(bevy::asset::AssetPlugin::default())
-            .add_plugin(bevy::window::WindowPlugin::default())
-            .add_plugin(bevy::render::RenderPlugin::default())
-            .add_plugin(bevy::render::texture::ImagePlugin::default())
-            .add_plugin(bevy::core_pipeline::CorePipelinePlugin)
-            .add_plugin(bevy::sprite::SpritePlugin);
+            .add_plugins(bevy::asset::AssetPlugin::default())
+            .add_plugins(bevy::render::texture::ImagePlugin::default())
+            .add_plugins(bevy::window::WindowPlugin::default())
+            .add_plugins(bevy::sprite::SpritePlugin::default())
+            .add_plugins(bevy::render::RenderPlugin::default());
 
-        app.add_system(sprite_custom_size);
+        app.add_systems(Update, sprite_custom_size);
 
         let set_size = UVec2::new(10, 10);
 
@@ -493,12 +486,11 @@ mod tests {
         let mut app = App::new();
 
         app.add_plugins(MinimalPlugins)
-            .add_plugin(bevy::asset::AssetPlugin::default())
-            .add_plugin(bevy::window::WindowPlugin::default())
-            .add_plugin(bevy::render::RenderPlugin::default())
-            .add_plugin(bevy::render::texture::ImagePlugin::default());
+            .add_plugins(bevy::asset::AssetPlugin::default())
+            .add_plugins(bevy::window::WindowPlugin::default())
+            .add_plugins(bevy::render::texture::ImagePlugin::default());
 
-        app.add_system(fill);
+        app.add_systems(Update, fill);
 
         let set_size = UVec2::new(5, 5);
         let fill_area = Vec2::new(10.5, 10.4);

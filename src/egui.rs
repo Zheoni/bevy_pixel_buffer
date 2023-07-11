@@ -27,7 +27,6 @@ pub struct PixelBufferEguiPlugin;
 
 /// A special base set running between [`CoreSet::PreUpdateFlush`] and [`CoreSet::Update`]
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
-#[system_set(base)]
 pub enum PixelBufferEguiSet {
     /// Registers Egui textures to their pixel buffers and updates their size
     Egui,
@@ -38,18 +37,19 @@ pub enum PixelBufferEguiSet {
 impl Plugin for PixelBufferEguiPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
-            (PixelBufferEguiSet::Egui, PixelBufferEguiSet::EguiFlush)
+            PreUpdate,
+            (PixelBufferEguiSet::Egui, PixelBufferEguiSet::EguiFlush).chain(),
+        );
+        app.add_systems(
+            PreUpdate,
+            (register_egui, update_egui_texture_size)
                 .chain()
-                .after(CoreSet::PreUpdateFlush)
-                .before(CoreSet::Update),
+                .in_set(PixelBufferEguiSet::Egui),
         );
-        app.add_system(register_egui.in_base_set(PixelBufferEguiSet::Egui));
-        app.add_system(
-            update_egui_texture_size
-                .after(register_egui)
-                .in_base_set(PixelBufferEguiSet::Egui),
+        app.add_systems(
+            PreUpdate,
+            apply_deferred.in_set(PixelBufferEguiSet::EguiFlush),
         );
-        app.add_system(apply_system_buffers.in_base_set(PixelBufferEguiSet::EguiFlush));
     }
 }
 

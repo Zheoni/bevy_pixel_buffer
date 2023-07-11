@@ -9,16 +9,15 @@ fn main() {
     };
 
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(EguiPlugin)
-        .add_plugins(PixelBufferPlugins)
-        .add_startup_system(
+        .add_plugins((DefaultPlugins, EguiPlugin, PixelBufferPlugins))
+        .add_systems(
+            Startup,
             PixelBufferBuilder::new()
                 .with_size(size)
                 .with_render(false) // disable rendering, as we'll do in it egui
                 .setup(),
         )
-        .add_system(update)
+        .add_systems(Update, update)
         .run()
 }
 

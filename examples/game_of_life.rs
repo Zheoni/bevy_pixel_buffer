@@ -1,16 +1,18 @@
 use bevy::{
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 use bevy_pixel_buffer::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(PixelBufferPlugin)
-        .add_plugin(ComputeShaderPlugin::<GameOfLifeShader>::default()) // add a plugin to handle our shader
-        .add_startup_system(setup)
+        .add_plugins((
+            DefaultPlugins,
+            PixelBufferPlugin,
+            ComputeShaderPlugin::<GameOfLifeShader>::default(), // add a plugin to handle our shader
+        ))
+        .add_systems(Startup, setup)
         .run()
 }
 
@@ -43,7 +45,7 @@ fn setup(
         .insert(cs.add(GameOfLifeShader::default()));
 }
 
-#[derive(AsBindGroup, TypeUuid, Clone, Debug, Default)]
+#[derive(AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
 #[uuid = "f690fdae-d598-45ab-8225-97e2a3f056e0"]
 struct GameOfLifeShader {}
 

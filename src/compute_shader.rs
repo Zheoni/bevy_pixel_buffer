@@ -8,14 +8,13 @@ use std::{borrow::Cow, marker::PhantomData};
 use bevy::{
     asset::Asset,
     prelude::*,
-    reflect::TypeUuid,
     render::{
         render_asset::RenderAssets,
         render_graph::{self, RenderGraph},
         render_resource::*,
         renderer::RenderDevice,
         texture::FallbackImage,
-        Extract, RenderApp, RenderSet,
+        Extract, Render, RenderApp, RenderSet,
     },
     utils::{HashMap, HashSet},
 };
@@ -70,7 +69,7 @@ use crate::pixel_buffer::Fill;
 /// The bind group 0 is set up with the texture in binding 0. The bind group 1 is the user bind group. The user bind
 /// groups is provided by the implementation of the [AsBindGroup] trait, probably derivind it.
 pub trait ComputeShader:
-    AsBindGroup + Send + Sync + Clone + TypeUuid + Default + Sized + 'static
+    AsBindGroup + Send + Sync + Clone + Asset + Default + Sized + 'static
 {
     /// Shader code to load. Returning [ShaderRef::Default] would result in a panic.
     fn shader() -> ShaderRef;
@@ -104,14 +103,23 @@ impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
                 .init_resource::<ExtractedShaders<S>>()
                 .init_resource::<PreparedShaders<S>>()
                 .init_resource::<PreparedImages<S>>()
-                .init_resource::<ComputeShaderPipeline<S>>()
-                .add_system(cs_extract::<S>.in_schedule(ExtractSchedule))
-                .add_system(prepare_images::<S>.in_set(RenderSet::Prepare))
-                .add_system(prepare_shaders::<S>.in_set(RenderSet::Prepare))
-                .add_system(cs_queue_bind_group::<S>.in_set(RenderSet::Queue));
+                .add_systems(ExtractSchedule, cs_extract::<S>)
+                .add_systems(
+                    Render,
+                    (prepare_images::<S>, prepare_shaders::<S>).in_set(RenderSet::Prepare),
+                )
+                .add_systems(Render, cs_queue_bind_group::<S>.in_set(RenderSet::Queue));
             let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
             render_graph.add_node("user_cs", ComputeShaderNode::<S>::default());
             render_graph.add_node_edge("user_cs", bevy::render::main_graph::node::CAMERA_DRIVER);
+        } else {
+            warn!("Can't build ComputeShaderPlugin: RenderApp sub app not found.")
+        }
+    }
+
+    fn finish(&self, app: &mut App) {
+        if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
+            render_app.init_resource::<ComputeShaderPipeline<S>>();
         }
     }
 }
@@ -294,8 +302,7 @@ fn prepare_images<S: ComputeShader>(
     mut prepared_images: ResMut<PreparedImages<S>>,
 ) {
     // remove invalid prepared images
-    prepared_images.drain_filter(|h, _| invalid_images.invalid.contains(h));
-
+    prepared_images.retain(|h, _| !invalid_images.invalid.contains(h));
     let mut buffer_images = HashSet::with_capacity(*previous_len);
     // iterate over all the buffers
     for image_handle in buffers.iter() {
@@ -328,9 +335,7 @@ fn prepare_images<S: ComputeShader>(
 
     // remove untracked images
     if prepared_images.len() != buffer_images.len() {
-        prepared_images
-            .drain_filter(|h, _| !buffer_images.contains(h))
-            .for_each(|_| info!("Removed prepared image"));
+        prepared_images.retain(|h, _| buffer_images.contains(h));
     }
 }
 
