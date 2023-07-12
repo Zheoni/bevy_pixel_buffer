@@ -11,7 +11,9 @@ A library to draw pixels in [bevy](https://crates.io/crates/bevy).
 - Allows dynamic resize of the pixel buffer to fill an area such as the window.
 - Support for multiple pixel buffers.
 - Allows to easily attach a compute shader to update the pixels.
-- [egui](https://crates.io/crates/egui) integration (through [bevy_egui](https://crates.io/crates/bevy_egui)) to show the pixels inside the UI.
+- [egui](https://crates.io/crates/egui) integration (through
+  [bevy_egui](https://crates.io/crates/bevy_egui)) to show the pixels inside the
+  UI.
 
 ## [Examples](./examples/)
 
@@ -59,6 +61,7 @@ Version compatibility table.
 
 | `bevy` | `bevy_pixel_buffer` |
 | ------ | ------------------- |
+| `0.11` | `0.5`               |
 | `0.10` | `0.4`               |
 | `0.9`  | `0.3`               |
 | `0.8`  | `0.2`               |

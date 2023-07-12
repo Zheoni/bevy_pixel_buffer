@@ -436,6 +436,7 @@ mod tests {
         assert_eq!(set_size, image_size);
     }
 
+    // I can't figure it out, but I'm 90% sure it has something to do with the plugins
     #[test]
     fn do_resize_sprite() {
         let mut app = App::new();
