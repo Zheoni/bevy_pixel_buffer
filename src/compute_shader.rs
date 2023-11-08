@@ -29,11 +29,11 @@ use crate::pixel_buffer::Fill;
 /// # Example
 /// ```no_run
 /// # use bevy::prelude::*;
-/// # use bevy::reflect::TypeUuid;
+/// # use bevy::reflect::{TypeUuid, TypePath};
 /// # use bevy_pixel_buffer::compute_shader::ComputeShader;
 /// # use bevy::render::render_resource::{ShaderRef, AsBindGroup};
 ///
-/// #[derive(AsBindGroup, TypeUuid, Clone, Debug, Default)]
+/// #[derive(AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
 /// #[uuid = "f690fdae-d598-45ab-8225-97e2a3f056e0"] // Make sure this is unique
 /// struct MyShader {}
 ///
