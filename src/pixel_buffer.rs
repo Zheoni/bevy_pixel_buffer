@@ -402,7 +402,6 @@ mod tests {
 
         app.add_plugins(MinimalPlugins)
             .add_plugins(bevy::asset::AssetPlugin::default())
-            .add_plugins(bevy::window::WindowPlugin::default())
             .add_plugins(bevy::render::texture::ImagePlugin::default());
 
         app.add_systems(Update, resize);
@@ -484,7 +483,6 @@ mod tests {
 
         app.add_plugins(MinimalPlugins)
             .add_plugins(bevy::asset::AssetPlugin::default())
-            .add_plugins(bevy::window::WindowPlugin::default())
             .add_plugins(bevy::render::texture::ImagePlugin::default());
 
         app.add_systems(Update, fill);
