@@ -31,9 +31,9 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(PixelBufferPlugin)  // Add this plugin
-        .add_startup_system(pixel_buffer_setup(size)) // Setup system
-        .add_system(update)
+        .add_plugins(PixelBufferPlugin)  // Add this plugin
+        .add_systems(Startup, pixel_buffer_setup(size)) // Setup system
+        .add_systems(Update, update)
         .run()
 }
 
