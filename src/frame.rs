@@ -165,7 +165,7 @@ impl GetFrame for Image {
 pub trait GetFrameFromHandle: AsImageHandle {
     /// Get a frame to mutate a pixel buffer
     fn frame<'a>(&self, images: &'a mut Assets<Image>) -> Frame<'a> {
-        Frame::extract(images, self.as_image_hande())
+        Frame::extract(images, self.as_image_handle())
     }
 }
 
@@ -175,7 +175,7 @@ impl<T: AsImageHandle> GetFrameFromHandle for T {}
 pub trait GetFrameFromImages: AsMut<Assets<Image>> {
     /// Get a frame to mutate a pixel buffer
     fn frame(&mut self, image_handle: impl AsImageHandle) -> Frame<'_> {
-        Frame::extract(self.as_mut(), image_handle.as_image_hande())
+        Frame::extract(self.as_mut(), image_handle.as_image_handle())
     }
 }
 
@@ -186,17 +186,17 @@ impl<T: AsMut<Assets<Image>>> GetFrameFromImages for T {}
 /// This is a workaround until `impl<T> AsRef<T> for &T` is stabilized.
 pub trait AsImageHandle {
     /// Get a image handle from the type
-    fn as_image_hande(&self) -> &Handle<Image>;
+    fn as_image_handle(&self) -> &Handle<Image>;
 }
 
 impl AsImageHandle for Handle<Image> {
-    fn as_image_hande(&self) -> &Handle<Image> {
+    fn as_image_handle(&self) -> &Handle<Image> {
         self
     }
 }
 
 impl AsImageHandle for &Handle<Image> {
-    fn as_image_hande(&self) -> &Handle<Image> {
+    fn as_image_handle(&self) -> &Handle<Image> {
         self
     }
 }
