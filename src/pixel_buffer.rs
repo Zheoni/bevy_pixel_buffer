@@ -271,7 +271,7 @@ pub fn create_image(params: CreateImageParams) -> Image {
             view_formats: &[],
         },
         data: vec![],
-        sampler_descriptor,
+        sampler: sampler_descriptor,
         texture_view_descriptor: None,
     };
     image.resize(image.texture_descriptor.size); // set image data to 0
@@ -326,7 +326,7 @@ fn resize(
         }
 
         let image = images.get_mut(image).expect("pixel buffer image");
-        if size.size != image.size().as_uvec2() {
+        if size.size != image.size() {
             info!("Resizing image to: {:?}", size);
             image.resize(Extent3d {
                 width: size.size.x,
@@ -430,7 +430,7 @@ mod tests {
         let set_size = app.world.get::<PixelBuffer>(pb_id).unwrap().size.size;
         let image_handle = app.world.get::<Handle<Image>>(pb_id).unwrap();
         let images = app.world.resource::<Assets<Image>>();
-        let image_size = images.get(image_handle).unwrap().size().as_uvec2();
+        let image_size = images.get(image_handle).unwrap().size();
 
         assert_eq!(set_size, image_size);
     }

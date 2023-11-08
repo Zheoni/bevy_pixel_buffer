@@ -116,7 +116,7 @@ impl<'a> Frame<'a> {
             .texture_descriptor
             .usage
             .contains(TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST));
-        let size = image.size().as_uvec2();
+        let size = image.size();
         let pixels = bytemuck::cast_slice_mut(&mut image.data);
         Self { pixels, size }
     }
