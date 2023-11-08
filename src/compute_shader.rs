@@ -246,11 +246,11 @@ fn cs_extract<S: ComputeShader>(
             AssetEvent::Added { id }
             | AssetEvent::Modified { id }
             | AssetEvent::LoadedWithDependencies { id } => {
-                changed.insert(id.clone());
+                changed.insert(*id);
             }
             AssetEvent::Removed { id } => {
                 changed.remove(id);
-                removed.push(id.clone());
+                removed.push(*id);
             }
         }
     }
@@ -274,7 +274,7 @@ fn cs_extract<S: ComputeShader>(
             | AssetEvent::LoadedWithDependencies { id }
                 if buffer_images.contains(id) =>
             {
-                invalid.insert(id.clone());
+                invalid.insert(*id);
             }
             _ => {}
         }
