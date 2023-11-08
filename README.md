@@ -31,9 +31,9 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(PixelBufferPlugin)  // Add this plugin
-        .add_startup_system(pixel_buffer_setup(size)) // Setup system
-        .add_system(update)
+        .add_plugins(PixelBufferPlugin)  // Add this plugin
+        .add_systems(Startup, pixel_buffer_setup(size)) // Setup system
+        .add_systems(Update, update)
         .run()
 }
 
@@ -61,6 +61,7 @@ Version compatibility table.
 
 | `bevy` | `bevy_pixel_buffer` |
 | ------ | ------------------- |
+| `0.12` | `0.6`               |
 | `0.11` | `0.5`               |
 | `0.10` | `0.4`               |
 | `0.9`  | `0.3`               |

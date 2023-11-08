@@ -36,7 +36,8 @@ pub struct CustomSpriteBundle {
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
 }
 
 /// Customisable params for the sprite that will be rendered by [RenderConfig].
@@ -225,8 +226,8 @@ impl PixelBufferBuilder {
     /// fn main() {
     ///     App::new()
     ///         .add_plugins(DefaultPlugins)
-    ///         .add_plugin(PixelBufferPlugin)
-    ///         .add_startup_system(PixelBufferBuilder::new() // <--
+    ///         .add_plugins(PixelBufferPlugin)
+    ///         .add_systems(Startup, PixelBufferBuilder::new() // <--
     ///             .with_size((400, 200))
     ///             .setup())
     ///         .run()
@@ -276,7 +277,8 @@ fn create_pixel_buffer<'w, 's, 'a>(
                     transform: sprite_bundle.transform,
                     global_transform: sprite_bundle.global_transform,
                     visibility: sprite_bundle.visibility,
-                    computed_visibility: sprite_bundle.computed_visibility,
+                    inherited_visibility: sprite_bundle.inherited_visibility,
+                    view_visibility: sprite_bundle.view_visibility,
                 };
                 entity.insert(sprite_bundle);
             }
@@ -316,8 +318,8 @@ fn create_pixel_buffer<'w, 's, 'a>(
 /// fn main() {
 ///     App::new()
 ///         .add_plugins(DefaultPlugins)
-///         .add_plugin(PixelBufferPlugin)
-///         .add_startup_system(pixel_buffer_setup((400, 200))) // <--
+///         .add_plugins(PixelBufferPlugin)
+///         .add_systems(Startup, pixel_buffer_setup((400, 200))) // <--
 ///         .run()
 /// }
 /// ```

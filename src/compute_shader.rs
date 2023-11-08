@@ -29,11 +29,11 @@ use crate::pixel_buffer::Fill;
 /// # Example
 /// ```no_run
 /// # use bevy::prelude::*;
-/// # use bevy::reflect::TypeUuid;
+/// # use bevy::reflect::{TypeUuid, TypePath};
 /// # use bevy_pixel_buffer::compute_shader::ComputeShader;
 /// # use bevy::render::render_resource::{ShaderRef, AsBindGroup};
 ///
-/// #[derive(AsBindGroup, TypeUuid, Clone, Debug, Default)]
+/// #[derive(Asset, AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
 /// #[uuid = "f690fdae-d598-45ab-8225-97e2a3f056e0"] // Make sure this is unique
 /// struct MyShader {}
 ///
@@ -69,7 +69,7 @@ use crate::pixel_buffer::Fill;
 /// The bind group 0 is set up with the texture in binding 0. The bind group 1 is the user bind group. The user bind
 /// groups is provided by the implementation of the [AsBindGroup] trait, probably derivind it.
 pub trait ComputeShader:
-    AsBindGroup + Send + Sync + Clone + Asset + Default + Sized + 'static
+    Asset + AsBindGroup + Send + Sync + Clone + Asset + Default + Sized + 'static
 {
     /// Shader code to load. Returning [ShaderRef::Default] would result in a panic.
     fn shader() -> ShaderRef;
@@ -96,7 +96,7 @@ impl<S: ComputeShader> Default for ComputeShaderPlugin<S> {
 
 impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
     fn build(&self, app: &mut App) {
-        app.add_asset::<S>();
+        app.init_asset::<S>();
 
         if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app
@@ -187,7 +187,7 @@ impl<S: ComputeShader> FromWorld for ComputeShaderPipeline<S> {
 
 #[derive(Resource)]
 struct InvalidatedImages<S: ComputeShader> {
-    invalid: HashSet<Handle<Image>>,
+    invalid: HashSet<AssetId<Image>>,
     marker: PhantomData<S>,
 }
 
@@ -202,8 +202,8 @@ impl<S: ComputeShader> Default for InvalidatedImages<S> {
 
 #[derive(Resource)]
 struct ExtractedShaders<S: ComputeShader> {
-    extracted: Vec<(Handle<S>, S)>,
-    removed: Vec<Handle<S>>,
+    extracted: Vec<(AssetId<S>, S)>,
+    removed: Vec<AssetId<S>>,
 }
 
 impl<S: ComputeShader> Default for ExtractedShaders<S> {
@@ -233,7 +233,7 @@ fn cs_extract<S: ComputeShader>(
             entity,
             (image_handle.clone_weak(), shader_handle.clone_weak()),
         ));
-        buffer_images.insert(image_handle.clone_weak());
+        buffer_images.insert(image_handle.id());
     }
     *previous_len = values.len();
     commands.insert_or_spawn_batch(values);
@@ -241,22 +241,24 @@ fn cs_extract<S: ComputeShader>(
     // Update the shader cache
     let mut changed = HashSet::default();
     let mut removed = Vec::new();
-    for event in shader_events.iter() {
+    for event in shader_events.read() {
         match event {
-            AssetEvent::Created { handle } | AssetEvent::Modified { handle } => {
-                changed.insert(handle.clone_weak());
+            AssetEvent::Added { id }
+            | AssetEvent::Modified { id }
+            | AssetEvent::LoadedWithDependencies { id } => {
+                changed.insert(id.clone());
             }
-            AssetEvent::Removed { handle } => {
-                changed.remove(handle);
-                removed.push(handle.clone_weak());
+            AssetEvent::Removed { id } => {
+                changed.remove(id);
+                removed.push(id.clone());
             }
         }
     }
 
     let mut extracted = Vec::new();
-    for handle in changed.drain() {
-        if let Some(asset) = shader_assets.get(&handle) {
-            extracted.push((handle, asset.clone()));
+    for id in changed.drain() {
+        if let Some(asset) = shader_assets.get(id) {
+            extracted.push((id, asset.clone()));
         }
     }
 
@@ -264,14 +266,15 @@ fn cs_extract<S: ComputeShader>(
 
     // Update image bind group cache
     let mut invalid = HashSet::default();
-    for event in image_events.iter() {
+    for event in image_events.read() {
         match event {
-            AssetEvent::Created { handle }
-            | AssetEvent::Modified { handle }
-            | AssetEvent::Removed { handle }
-                if buffer_images.contains(handle) =>
+            AssetEvent::Added { id }
+            | AssetEvent::Modified { id }
+            | AssetEvent::Removed { id }
+            | AssetEvent::LoadedWithDependencies { id }
+                if buffer_images.contains(id) =>
             {
-                invalid.insert(handle.clone_weak());
+                invalid.insert(id.clone());
             }
             _ => {}
         }
@@ -290,7 +293,7 @@ struct PreparedImage<S> {
 }
 
 #[derive(Resource, Default, Deref, DerefMut)]
-struct PreparedImages<S>(HashMap<Handle<Image>, PreparedImage<S>>);
+struct PreparedImages<S>(HashMap<AssetId<Image>, PreparedImage<S>>);
 
 fn prepare_images<S: ComputeShader>(
     mut previous_len: Local<usize>,
@@ -302,26 +305,28 @@ fn prepare_images<S: ComputeShader>(
     mut prepared_images: ResMut<PreparedImages<S>>,
 ) {
     // remove invalid prepared images
-    prepared_images.retain(|h, _| !invalid_images.invalid.contains(h));
+    prepared_images.retain(|id, _| !invalid_images.invalid.contains(id));
     let mut buffer_images = HashSet::with_capacity(*previous_len);
     // iterate over all the buffers
     for image_handle in buffers.iter() {
-        buffer_images.insert(image_handle.clone_weak());
+        let image_handle_id = image_handle.id();
+
+        buffer_images.insert(image_handle_id);
 
         // if the image is not prepared, do it
-        if !prepared_images.contains_key(image_handle) {
-            if let Some(view) = images.get(image_handle) {
-                let texture_bind_group = render_device.create_bind_group(&BindGroupDescriptor {
-                    label: None,
-                    layout: &pipeline.texture_bind_group_layout,
-                    entries: &[BindGroupEntry {
+        if !prepared_images.contains_key(&image_handle_id) {
+            if let Some(view) = images.get(image_handle_id) {
+                let texture_bind_group = render_device.create_bind_group(
+                    None,
+                    &pipeline.texture_bind_group_layout,
+                    &[BindGroupEntry {
                         binding: 0,
                         resource: BindingResource::TextureView(&view.texture_view),
                     }],
-                });
+                );
 
                 prepared_images.insert(
-                    image_handle.clone_weak(),
+                    image_handle_id,
                     PreparedImage {
                         texture_bind_group,
                         size: view.size.as_uvec2(),
@@ -345,10 +350,10 @@ struct PreparedShader<S> {
 }
 
 #[derive(Resource, Default, Deref, DerefMut)]
-struct PreparedShaders<S: Asset + Default>(HashMap<Handle<S>, PreparedShader<S>>);
+struct PreparedShaders<S: Asset + Default>(HashMap<AssetId<S>, PreparedShader<S>>);
 
 struct PrepareNextFrameShaders<S: ComputeShader> {
-    assets: Vec<(Handle<S>, S)>,
+    assets: Vec<(AssetId<S>, S)>,
 }
 
 impl<S: ComputeShader> Default for PrepareNextFrameShaders<S> {
@@ -369,13 +374,13 @@ fn prepare_shaders<S: ComputeShader>(
     pipeline: Res<ComputeShaderPipeline<S>>,
 ) {
     let mut queued_assets = std::mem::take(&mut prepare_next_frame.assets);
-    for (handle, shader) in queued_assets.drain(..) {
+    for (handle_id, shader) in queued_assets.drain(..) {
         match prepare_shader(&shader, &render_device, &images, &fallback_image, &pipeline) {
             Ok(prepared_asset) => {
-                render_materials.insert(handle, prepared_asset);
+                render_materials.insert(handle_id, prepared_asset);
             }
             Err(AsBindGroupError::RetryNextUpdate) => {
-                prepare_next_frame.assets.push((handle, shader));
+                prepare_next_frame.assets.push((handle_id, shader));
             }
         }
     }
@@ -384,13 +389,13 @@ fn prepare_shaders<S: ComputeShader>(
         render_materials.remove(&removed);
     }
 
-    for (handle, shader) in std::mem::take(&mut extracted_assets.extracted) {
+    for (handle_id, shader) in std::mem::take(&mut extracted_assets.extracted) {
         match prepare_shader(&shader, &render_device, &images, &fallback_image, &pipeline) {
             Ok(prepared_asset) => {
-                render_materials.insert(handle, prepared_asset);
+                render_materials.insert(handle_id, prepared_asset);
             }
             Err(AsBindGroupError::RetryNextUpdate) => {
-                prepare_next_frame.assets.push((handle, shader));
+                prepare_next_frame.assets.push((handle_id, shader));
             }
         }
     }
@@ -433,8 +438,8 @@ fn cs_queue_bind_group<S: ComputeShader>(
     let mut shaders = Vec::with_capacity(*previous_len);
     for (image_handle, shader_handle) in buffers.iter() {
         if let (Some(prepared_image), Some(prepared_shader)) = (
-            prepared_images.get(image_handle),
-            prepared_shaders.get(shader_handle),
+            prepared_images.get(&image_handle.id()),
+            prepared_shaders.get(&shader_handle.id()),
         ) {
             shaders.push(ComputeShaderInfo {
                 texture_bind_group: prepared_image.texture_bind_group.clone(),

@@ -117,7 +117,7 @@ fn ui(
     });
 }
 
-#[derive(AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
+#[derive(Asset, AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
 #[uuid = "f690fdae-d598-45ab-8225-97e2a3f056e0"]
 struct MandelbrotSetShader {
     #[uniform(0)]

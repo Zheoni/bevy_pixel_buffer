@@ -13,9 +13,9 @@
 //!
 //!     App::new()
 //!         .add_plugins(DefaultPlugins)
-//!         .add_plugin(PixelBufferPlugin)
-//!         .add_startup_system(pixel_buffer_setup(size))
-//!         .add_system(update)
+//!         .add_plugins(PixelBufferPlugin)
+//!         .add_systems(Startup, pixel_buffer_setup(size))
+//!         .add_systems(Update, update)
 //!         .run()
 //! }
 //!

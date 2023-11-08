@@ -35,6 +35,6 @@ fn update(mut egui_context: EguiContexts, mut pb: QueryPixelBuffer) {
         let texture = pb.egui_texture();
 
         // show it
-        ui.image(texture.id, texture.size);
+        ui.image(egui::load::SizedTexture::new(texture.id, texture.size));
     });
 }

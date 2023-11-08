@@ -62,7 +62,9 @@ fn update(
         egui::Window::new(format!("Buffer {}", buffer.id))
             .collapsible(false)
             .open(&mut buffer.shown)
-            .show(ctx, |ui| ui.image(texture.id, texture.size));
+            .show(ctx, |ui| {
+                ui.image(egui::load::SizedTexture::new(texture.id, texture.size))
+            });
     }
 }
 

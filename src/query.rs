@@ -107,13 +107,13 @@ mod queries {
 pub use queries::*;
 
 impl AsImageHandle for crate::query::PixelBuffersReadOnlyItem<'_> {
-    fn as_image_hande(&self) -> &Handle<Image> {
+    fn as_image_handle(&self) -> &Handle<Image> {
         self.image_handle
     }
 }
 
 impl AsImageHandle for crate::query::PixelBuffersItem<'_> {
-    fn as_image_hande(&self) -> &Handle<Image> {
+    fn as_image_handle(&self) -> &Handle<Image> {
         self.image_handle
     }
 }
