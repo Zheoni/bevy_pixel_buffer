@@ -436,17 +436,13 @@ mod tests {
         assert_eq!(set_size, image_size);
     }
 
-    // I can't figure it out, but I'm 90% sure it has something to do with the plugins
     #[test]
     fn do_resize_sprite() {
         let mut app = App::new();
 
         app.add_plugins(MinimalPlugins)
             .add_plugins(bevy::asset::AssetPlugin::default())
-            .add_plugins(bevy::render::texture::ImagePlugin::default())
-            .add_plugins(bevy::window::WindowPlugin::default())
-            .add_plugins(bevy::sprite::SpritePlugin::default())
-            .add_plugins(bevy::render::RenderPlugin::default());
+            .add_plugins(bevy::render::texture::ImagePlugin::default());
 
         app.add_systems(Update, sprite_custom_size);
 
