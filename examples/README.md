@@ -12,6 +12,7 @@ Example | Description
 [bundle](./bundle.rs) | Manually create a pixel buffer with a bundle. Equivalent to [custom_sprite](./custom_sprite.rs).
 [custom_sprite](./custom_sprite.rs) | Render as a sprite with custom parameters. Equivalent to [bundle](./bundle.rs).
 [edit_transform](./edit_transform.rs) | Shows how to edit the transform of the underlying sprite. Use the keyboard arrows to move.
+[single_pixel](./single_pixel.rs) | Edit one pixel instead of the whole frame.
 
 \* Uses `egui` to demo, but is not required.
 
