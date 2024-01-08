@@ -316,7 +316,7 @@ fn resize(
     >,
     mut images: ResMut<Assets<Image>>,
 ) {
-    for (image, pb) in pixel_buffer.iter() {
+    for (image_handle, pb) in pixel_buffer.iter() {
         let PixelBuffer { size, .. } = pb;
 
         if size.size.x == 0 || size.size.y == 0 || size.pixel_size.x == 0 || size.pixel_size.y == 0
@@ -325,8 +325,11 @@ fn resize(
             return;
         }
 
-        let image = images.get_mut(image).expect("pixel buffer image");
+        let image = images.get(image_handle).expect("pixel buffer image");
+
         if size.size != image.size() {
+            let image = images.get_mut(image_handle).expect("pixel buffer image");
+
             info!("Resizing image to: {:?}", size);
             image.resize(Extent3d {
                 width: size.size.x,
