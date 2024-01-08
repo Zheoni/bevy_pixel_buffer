@@ -1,3 +1,7 @@
+# 0.6.1
+
+- Fix #11 ( thanks to @crillon )
+
 # 0.6.0
 
 Update to `bevy` `0.12`.
