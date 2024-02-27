@@ -631,7 +631,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_pixel_buffer"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "bevy",
  "bevy_egui",

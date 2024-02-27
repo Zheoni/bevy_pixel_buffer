@@ -1,6 +1,6 @@
 [package]
 name = "bevy_pixel_buffer"
-version = "0.6.1"
+version = "0.7.0"
 edition = "2021"
 authors = ["Francisco J. Sánchez <zheoni@outlook.es>"]
 description = "A library to draw pixels in bevy"
