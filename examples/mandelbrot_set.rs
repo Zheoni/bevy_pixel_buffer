@@ -1,7 +1,7 @@
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
-    reflect::{TypePath, TypeUuid},
+    reflect::TypePath,
     render::render_resource::{AsBindGroup, ShaderRef, ShaderType},
 };
 use bevy_egui::{
@@ -40,28 +40,28 @@ fn setup(
 fn process_input(
     pb: Query<&Handle<MandelbrotSetShader>>,
     mut cs: ResMut<Assets<MandelbrotSetShader>>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     let state = &mut cs.get_mut(pb.single()).unwrap().params;
 
     const MOVE_SPEED: f32 = 0.02;
-    if keyboard_input.pressed(KeyCode::A) {
+    if keyboard_input.pressed(KeyCode::KeyA) {
         state.center.x -= state.scale * MOVE_SPEED;
     }
-    if keyboard_input.pressed(KeyCode::D) {
+    if keyboard_input.pressed(KeyCode::KeyD) {
         state.center.x += state.scale * MOVE_SPEED;
     }
-    if keyboard_input.pressed(KeyCode::W) {
+    if keyboard_input.pressed(KeyCode::KeyW) {
         state.center.y += state.scale * MOVE_SPEED;
     }
-    if keyboard_input.pressed(KeyCode::S) {
+    if keyboard_input.pressed(KeyCode::KeyS) {
         state.center.y -= state.scale * MOVE_SPEED;
     }
     const SCALE_SPEED: f32 = 1.1;
-    if keyboard_input.pressed(KeyCode::Q) {
+    if keyboard_input.pressed(KeyCode::KeyQ) {
         state.scale *= SCALE_SPEED;
     }
-    if keyboard_input.pressed(KeyCode::E) {
+    if keyboard_input.pressed(KeyCode::KeyE) {
         state.scale /= SCALE_SPEED;
     }
 }
@@ -74,7 +74,7 @@ fn ui(
 ) {
     let params = &mut cs.get_mut(pb.single()).unwrap().params;
     let fps = diagnostics
-        .get(FrameTimeDiagnosticsPlugin::FPS)
+        .get(&FrameTimeDiagnosticsPlugin::FPS)
         .unwrap()
         .average()
         .unwrap_or_default();
@@ -117,8 +117,8 @@ fn ui(
     });
 }
 
-#[derive(Asset, AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
-#[uuid = "f690fdae-d598-45ab-8225-97e2a3f056e0"]
+#[derive(Asset, AsBindGroup, TypePath, Clone, Debug, Default)]
+#[type_path = "example::mandelbrot_set_shader"]
 struct MandelbrotSetShader {
     #[uniform(0)]
     params: Params,

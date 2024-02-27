@@ -19,14 +19,14 @@ fn draw_random(mut pb: QueryPixelBuffer) {
     pb.frame().per_pixel(|_, _| Pixel::random());
 }
 
-fn update(mut q: Query<&mut Transform, With<PixelBuffer>>, keys: Res<Input<KeyCode>>) {
-    let movement = if keys.just_pressed(KeyCode::Left) {
+fn update(mut q: Query<&mut Transform, With<PixelBuffer>>, keys: Res<ButtonInput<KeyCode>>) {
+    let movement = if keys.just_pressed(KeyCode::ArrowLeft) {
         Some((-1, 0))
-    } else if keys.just_pressed(KeyCode::Right) {
+    } else if keys.just_pressed(KeyCode::ArrowRight) {
         Some((1, 0))
-    } else if keys.just_pressed(KeyCode::Up) {
+    } else if keys.just_pressed(KeyCode::ArrowUp) {
         Some((0, 1))
-    } else if keys.just_pressed(KeyCode::Down) {
+    } else if keys.just_pressed(KeyCode::ArrowDown) {
         Some((0, -1))
     } else {
         None

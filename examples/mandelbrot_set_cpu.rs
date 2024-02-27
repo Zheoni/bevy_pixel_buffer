@@ -30,27 +30,31 @@ fn main() {
         .run()
 }
 
-fn process_input(mut params: ResMut<Params>, keyboard_input: Res<Input<KeyCode>>, time: Res<Time>) {
+fn process_input(
+    mut params: ResMut<Params>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
+) {
     let state = params.as_mut();
     let delta = time.delta().as_secs_f64();
     const MOVE_SPEED: f64 = 0.2;
-    if keyboard_input.pressed(KeyCode::A) {
+    if keyboard_input.pressed(KeyCode::KeyA) {
         state.center.x -= state.scale * MOVE_SPEED * delta;
     }
-    if keyboard_input.pressed(KeyCode::D) {
+    if keyboard_input.pressed(KeyCode::KeyD) {
         state.center.x += state.scale * MOVE_SPEED * delta;
     }
-    if keyboard_input.pressed(KeyCode::W) {
+    if keyboard_input.pressed(KeyCode::KeyW) {
         state.center.y += state.scale * MOVE_SPEED * delta;
     }
-    if keyboard_input.pressed(KeyCode::S) {
+    if keyboard_input.pressed(KeyCode::KeyS) {
         state.center.y -= state.scale * MOVE_SPEED * delta;
     }
     const SCALE_SPEED: f64 = 1.1;
-    if keyboard_input.pressed(KeyCode::Q) {
+    if keyboard_input.pressed(KeyCode::KeyQ) {
         state.scale *= SCALE_SPEED;
     }
-    if keyboard_input.pressed(KeyCode::E) {
+    if keyboard_input.pressed(KeyCode::KeyE) {
         state.scale /= SCALE_SPEED;
     }
 }
@@ -58,7 +62,7 @@ fn process_input(mut params: ResMut<Params>, keyboard_input: Res<Input<KeyCode>>
 fn ui(mut egui_ctx: EguiContexts, diagnostics: Res<DiagnosticsStore>, mut params: ResMut<Params>) {
     let params = params.as_mut();
     let fps = diagnostics
-        .get(FrameTimeDiagnosticsPlugin::FPS)
+        .get(&FrameTimeDiagnosticsPlugin::FPS)
         .unwrap()
         .average()
         .unwrap_or_default();

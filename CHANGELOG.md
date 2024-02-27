@@ -1,26 +1,35 @@
-# 0.6.1
+# `bevy_pixel_buffer` Change Log
+
+## Unreleased - ReleaseDate
+
+## 0.7.0 - 2024/02/27
+
+Update to `bevy` `0.13`.
+
+## 0.6.1
 
 - Fix #11 ( thanks to @crillon )
 
-# 0.6.0
+## 0.6.0
 
 Update to `bevy` `0.12`.
 
-# 0.5.0
+## 0.5.0
 
 Update to `bevy` `0.11`.
 
-# 0.4.0
+## 0.4.0
 
 Update to `bevy` `0.10`.
+
 - Fix issues with stretching.
 - Add `Fill::stretch`.
 
-# 0.3.0
+## 0.3.0
 
 Update to `bevy` `0.9`.
 
-# 0.2.0
+## 0.2.0
 
 - `PixelBuffer` is no longer a marker component, but holds the size and fill behaviour.
 - Add `create_image` function.

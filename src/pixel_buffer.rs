@@ -273,6 +273,7 @@ pub fn create_image(params: CreateImageParams) -> Image {
         data: vec![],
         sampler: sampler_descriptor,
         texture_view_descriptor: None,
+        asset_usage: Default::default(),
     };
     image.resize(image.texture_descriptor.size); // set image data to 0
     image

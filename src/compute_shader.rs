@@ -10,7 +10,7 @@ use bevy::{
     prelude::*,
     render::{
         render_asset::RenderAssets,
-        render_graph::{self, RenderGraph},
+        render_graph::{self, RenderGraph, RenderLabel},
         render_resource::*,
         renderer::RenderDevice,
         texture::FallbackImage,
@@ -29,12 +29,12 @@ use crate::pixel_buffer::Fill;
 /// # Example
 /// ```no_run
 /// # use bevy::prelude::*;
-/// # use bevy::reflect::{TypeUuid, TypePath};
+/// # use bevy::reflect::{TypePath};
 /// # use bevy_pixel_buffer::compute_shader::ComputeShader;
 /// # use bevy::render::render_resource::{ShaderRef, AsBindGroup};
 ///
-/// #[derive(Asset, AsBindGroup, TypeUuid, TypePath, Clone, Debug, Default)]
-/// #[uuid = "f690fdae-d598-45ab-8225-97e2a3f056e0"] // Make sure this is unique
+/// #[derive(Asset, AsBindGroup, TypePath, Clone, Debug, Default)]
+/// #[type_path = "example::my_shader"] // Make sure this is unique
 /// struct MyShader {}
 ///
 /// impl ComputeShader for MyShader {
@@ -94,6 +94,9 @@ impl<S: ComputeShader> Default for ComputeShaderPlugin<S> {
     }
 }
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
+struct UserCs;
+
 impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
     fn build(&self, app: &mut App) {
         app.init_asset::<S>();
@@ -110,8 +113,8 @@ impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
                 )
                 .add_systems(Render, cs_queue_bind_group::<S>.in_set(RenderSet::Queue));
             let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
-            render_graph.add_node("user_cs", ComputeShaderNode::<S>::default());
-            render_graph.add_node_edge("user_cs", bevy::render::main_graph::node::CAMERA_DRIVER);
+            render_graph.add_node(UserCs, ComputeShaderNode::<S>::default());
+            render_graph.add_node_edge(UserCs, bevy::render::graph::CameraDriverLabel);
         } else {
             warn!("Can't build ComputeShaderPlugin: RenderApp sub app not found.")
         }
@@ -144,20 +147,19 @@ impl<S: ComputeShader> FromWorld for ComputeShaderPipeline<S> {
         };
         let entry_point = S::entry_point();
 
-        let texture_bind_group_layout =
-            device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: None,
-                entries: &[BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::COMPUTE,
-                    ty: BindingType::StorageTexture {
-                        access: StorageTextureAccess::ReadWrite,
-                        format: TextureFormat::Rgba8Unorm,
-                        view_dimension: TextureViewDimension::D2,
-                    },
-                    count: None,
-                }],
-            });
+        let texture_bind_group_layout = device.create_bind_group_layout(
+            None,
+            &[BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::COMPUTE,
+                ty: BindingType::StorageTexture {
+                    access: StorageTextureAccess::ReadWrite,
+                    format: TextureFormat::Rgba8Unorm,
+                    view_dimension: TextureViewDimension::D2,
+                },
+                count: None,
+            }],
+        );
 
         let user_bind_group_layout = S::bind_group_layout(device);
 
@@ -248,7 +250,7 @@ fn cs_extract<S: ComputeShader>(
             | AssetEvent::LoadedWithDependencies { id } => {
                 changed.insert(*id);
             }
-            AssetEvent::Removed { id } => {
+            AssetEvent::Removed { id } | AssetEvent::Unused { id } => {
                 changed.remove(id);
                 removed.push(*id);
             }

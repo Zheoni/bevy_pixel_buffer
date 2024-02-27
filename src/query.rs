@@ -50,10 +50,7 @@
 
 use std::ops::{Deref, DerefMut};
 
-use bevy::{
-    ecs::{query::WorldQuery, system::SystemParam},
-    prelude::*,
-};
+use bevy::{ecs::system::SystemParam, prelude::*};
 
 use crate::{
     frame::{AsImageHandle, Frame, GetFrame},
@@ -63,6 +60,8 @@ use crate::{
 // #[derive(WorldQuery)] generates structs without documentation, put them inside
 // here to allow that
 mod queries {
+    use bevy::ecs::query::QueryData;
+
     use super::*;
     // cannot use #[cfg(feature = "egui")] inside the derive
 
@@ -70,8 +69,8 @@ mod queries {
     /// Query to get the pixel buffers
     ///
     /// See [module documentation](crate::query).
-    #[derive(WorldQuery)]
-    #[world_query(mutable, derive(Debug))]
+    #[derive(QueryData)]
+    #[query_data(mutable, derive(Debug))]
     pub struct PixelBuffers {
         /// [Entity] of the pixel buffer
         pub entity: Entity,
@@ -85,8 +84,8 @@ mod queries {
     /// Query to get the pixel buffers.
     ///
     /// See [module documentation](crate::query).
-    #[derive(WorldQuery)]
-    #[world_query(mutable, derive(Debug))]
+    #[derive(QueryData)]
+    #[query_data(mutable, derive(Debug))]
     pub struct PixelBuffers {
         /// [Entity] of the pixel buffer
         pub entity: Entity,

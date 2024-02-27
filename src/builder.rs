@@ -180,22 +180,22 @@ impl PixelBufferBuilder {
     }
 
     /// Spawns a new entity and inserts a pixel buffer with the builder's configuration to it.
-    pub fn spawn<'w, 's, 'a>(
+    pub fn spawn<'a>(
         self,
-        commands: &'a mut Commands<'w, 's>,
+        commands: &'a mut Commands,
         images: &'a mut Assets<Image>,
-    ) -> PixelBufferCommands<'w, 's, 'a> {
+    ) -> PixelBufferCommands<'a> {
         let entity = commands.spawn(());
         create_pixel_buffer(entity, images, self.size, self.fill, self.render)
     }
 
     /// Inserts a new pixel buffer with the builder's configuration into an existing entity.
-    pub fn insert<'w, 's, 'a>(
+    pub fn insert<'a>(
         self,
-        commands: &'a mut Commands<'w, 's>,
+        commands: &'a mut Commands,
         images: &'a mut Assets<Image>,
         entity: Entity,
-    ) -> PixelBufferCommands<'w, 's, 'a> {
+    ) -> PixelBufferCommands<'a> {
         let entity = commands.entity(entity);
         create_pixel_buffer(entity, images, self.size, self.fill, self.render)
     }
@@ -240,13 +240,13 @@ impl PixelBufferBuilder {
     }
 }
 
-fn create_pixel_buffer<'w, 's, 'a>(
-    mut entity: EntityCommands<'w, 's, 'a>,
+fn create_pixel_buffer<'a>(
+    mut entity: EntityCommands<'a>,
     images: &'a mut Assets<Image>,
     size: PixelBufferSize,
     fill: Fill,
     render: Option<RenderConfig>,
-) -> PixelBufferCommands<'w, 's, 'a> {
+) -> PixelBufferCommands<'a> {
     let image = images.add(create_image(size.size.into()));
 
     if let Some(render) = render {
@@ -336,13 +336,13 @@ pub fn pixel_buffer_setup(
 
 /// Struct returned from creating a pixel buffer with [PixelBufferBuilder]
 /// allowing to work with the new buffer.
-pub struct PixelBufferCommands<'w, 's, 'a> {
+pub struct PixelBufferCommands<'a> {
     images: &'a mut Assets<Image>,
     image_handle: Handle<Image>,
-    entity_commands: EntityCommands<'w, 's, 'a>,
+    entity_commands: EntityCommands<'a>,
 }
 
-impl<'w, 's, 'a> PixelBufferCommands<'w, 's, 'a> {
+impl<'a> PixelBufferCommands<'a> {
     /// Runs a given closure to modify the buffer.
     ///
     /// This is just to allow chaining a call to [FrameEditExtension::edit_frame].
@@ -365,12 +365,12 @@ impl<'w, 's, 'a> PixelBufferCommands<'w, 's, 'a> {
     }
 
     /// Returns the [EntityCommands] struct to work with the buffer entity.
-    pub fn entity(&mut self) -> &mut EntityCommands<'w, 's, 'a> {
+    pub fn entity(&mut self) -> &mut EntityCommands<'a> {
         &mut self.entity_commands
     }
 }
 
-impl<'w, 's, 'a> GetFrame for PixelBufferCommands<'w, 's, 'a> {
+impl<'a> GetFrame for PixelBufferCommands<'a> {
     fn frame(&mut self) -> Frame<'_> {
         Frame::extract(self.images, &self.image_handle)
     }

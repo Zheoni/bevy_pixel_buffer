@@ -21,19 +21,19 @@ rayon = ["dep:rayon"]
 rand = ["dep:rand"]
 
 [dependencies]
-bevy_egui = { version = "0.23", optional = true }
+bevy_egui = { version = "0.25", optional = true }
 bytemuck = { version = "1.13", features = ["derive"] }
 rand = { version = "0.8", optional = true }
 rayon = { version = "1.5", optional = true }
 thiserror = "1.0"
 
 [dependencies.bevy]
-version = "0.12"
+version = "0.13"
 default-features = false
 features = ["bevy_render", "bevy_sprite", "bevy_asset", "bevy_core_pipeline"]
 
 [dev-dependencies.bevy]
-version = "0.12"
+version = "0.13"
 default-features = false
 features = ["x11", "bevy_winit"]
 
