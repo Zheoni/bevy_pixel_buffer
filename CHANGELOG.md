@@ -2,6 +2,10 @@
 
 ## Unreleased - ReleaseDate
 
+## 0.7.1 - 2024/04/11
+
+Update `bevy_egui` to `0.26`
+
 ## 0.7.0 - 2024/02/27
 
 Update to `bevy` `0.13`.
