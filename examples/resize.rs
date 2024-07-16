@@ -17,7 +17,7 @@ fn main() {
         // prepare the resize for the next frame
         .add_systems(Update, (update, resize).chain())
         .insert_resource(ResizeTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
-        .run()
+        .run();
 }
 
 // update pixels when pixel buffer changes

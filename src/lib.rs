@@ -12,11 +12,10 @@
 //!     };
 //!
 //!     App::new()
-//!         .add_plugins(DefaultPlugins)
-//!         .add_plugins(PixelBufferPlugin)
+//!         .add_plugins((DefaultPlugins, PixelBufferPlugin))
 //!         .add_systems(Startup, pixel_buffer_setup(size))
 //!         .add_systems(Update, update)
-//!         .run()
+//!         .run();
 //! }
 //!
 //! fn update(mut pb: QueryPixelBuffer) {

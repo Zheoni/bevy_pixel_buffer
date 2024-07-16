@@ -27,7 +27,7 @@ fn main() {
         .add_systems(Update, (process_input, ui))
         .add_systems(Update, render.after(process_input))
         .insert_resource(Params::default())
-        .run()
+        .run();
 }
 
 fn process_input(

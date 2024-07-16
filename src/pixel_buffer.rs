@@ -415,11 +415,11 @@ mod tests {
 
         assert_ne!(initial_size, set_size);
 
-        let mut images = app.world.resource_mut::<Assets<Image>>();
+        let mut images = app.world_mut().resource_mut::<Assets<Image>>();
         let image = images.add(create_image(initial_size.into()));
 
         let pb_id = app
-            .world
+            .world_mut()
             .spawn(PixelBufferBundle {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
@@ -431,9 +431,9 @@ mod tests {
 
         app.update();
 
-        let set_size = app.world.get::<PixelBuffer>(pb_id).unwrap().size.size;
-        let image_handle = app.world.get::<Handle<Image>>(pb_id).unwrap();
-        let images = app.world.resource::<Assets<Image>>();
+        let set_size = app.world().get::<PixelBuffer>(pb_id).unwrap().size.size;
+        let image_handle = app.world().get::<Handle<Image>>(pb_id).unwrap();
+        let images = app.world().resource::<Assets<Image>>();
         let image_size = images.get(image_handle).unwrap().size();
 
         assert_eq!(set_size, image_size);
@@ -451,11 +451,11 @@ mod tests {
 
         let set_size = UVec2::new(10, 10);
 
-        let mut images = app.world.resource_mut::<Assets<Image>>();
+        let mut images = app.world_mut().resource_mut::<Assets<Image>>();
         let image = images.add(create_image(set_size.into()));
 
         let pb_id = app
-            .world
+            .world_mut()
             .spawn(PixelBufferSpriteBundle {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
@@ -474,8 +474,8 @@ mod tests {
 
         app.update();
 
-        let size = app.world.get::<PixelBuffer>(pb_id).unwrap().size;
-        let sprite = app.world.get::<Sprite>(pb_id).unwrap();
+        let size = app.world().get::<PixelBuffer>(pb_id).unwrap().size;
+        let sprite = app.world().get::<Sprite>(pb_id).unwrap();
 
         assert!(sprite.custom_size.is_some());
         assert_eq!(size.screen_size(), sprite.custom_size.unwrap().as_uvec2());
@@ -494,11 +494,11 @@ mod tests {
         let set_size = UVec2::new(5, 5);
         let fill_area = Vec2::new(10.5, 10.4);
 
-        let mut images = app.world.resource_mut::<Assets<Image>>();
+        let mut images = app.world_mut().resource_mut::<Assets<Image>>();
         let image = images.add(create_image(set_size.into()));
 
         let pb_id = app
-            .world
+            .world_mut()
             .spawn(PixelBufferBundle {
                 pixel_buffer: PixelBuffer {
                     size: PixelBufferSize::size(set_size),
@@ -510,7 +510,7 @@ mod tests {
 
         app.update();
 
-        let size = app.world.get::<PixelBuffer>(pb_id).unwrap().size.size;
+        let size = app.world().get::<PixelBuffer>(pb_id).unwrap().size.size;
         assert_eq!(size, UVec2::new(10, 10));
     }
 }

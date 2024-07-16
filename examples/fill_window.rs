@@ -12,7 +12,7 @@ fn main() {
                 .setup(),
         )
         .add_systems(Update, update)
-        .run()
+        .run();
 }
 
 fn update(mut pb: QueryPixelBuffer) {

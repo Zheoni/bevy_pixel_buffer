@@ -225,12 +225,11 @@ impl PixelBufferBuilder {
     /// # use bevy_pixel_buffer::prelude::*;
     /// fn main() {
     ///     App::new()
-    ///         .add_plugins(DefaultPlugins)
-    ///         .add_plugins(PixelBufferPlugin)
+    ///         .add_plugins((DefaultPlugins, PixelBufferPlugin))
     ///         .add_systems(Startup, PixelBufferBuilder::new() // <--
     ///             .with_size((400, 200))
     ///             .setup())
-    ///         .run()
+    ///         .run();
     /// }
     /// ```
     pub fn setup(self) -> impl FnMut(Commands, ResMut<Assets<Image>>) {
@@ -317,10 +316,9 @@ fn create_pixel_buffer<'a>(
 /// # use bevy_pixel_buffer::prelude::*;
 /// fn main() {
 ///     App::new()
-///         .add_plugins(DefaultPlugins)
-///         .add_plugins(PixelBufferPlugin)
+///         .add_plugins((DefaultPlugins, PixelBufferPlugin))
 ///         .add_systems(Startup, pixel_buffer_setup((400, 200))) // <--
-///         .run()
+///         .run();
 /// }
 /// ```
 pub fn pixel_buffer_setup(

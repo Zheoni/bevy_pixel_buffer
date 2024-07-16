@@ -20,7 +20,7 @@ fn main() {
                     spawn_camera: true,
                     sprite_bundle: CustomSpriteBundle {
                         sprite: CustomSprite {
-                            color: Color::PINK,
+                            color: bevy::color::palettes::basic::FUCHSIA.into(),
                             ..Default::default()
                         },
                         transform: Transform::from_xyz(-100.0, -100.0, 0.0),
@@ -30,7 +30,7 @@ fn main() {
                 .setup(),
         )
         .add_systems(Update, update)
-        .run()
+        .run();
 }
 
 fn update(mut pb: QueryPixelBuffer) {

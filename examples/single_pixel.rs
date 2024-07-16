@@ -12,7 +12,7 @@ fn main() {
         .add_plugins((DefaultPlugins, PixelBufferPlugin))
         .add_systems(Startup, pixel_buffer_setup(size))
         .add_systems(Update, update)
-        .run()
+        .run();
 }
 
 fn update(mut pb: QueryPixelBuffer) {

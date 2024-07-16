@@ -10,7 +10,7 @@ fn main() {
         .add_plugins((DefaultPlugins, PixelBufferPlugin))
         .add_systems(Startup, setup)
         .add_systems(Update, update)
-        .run()
+        .run();
 }
 
 fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
@@ -33,7 +33,7 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
                 ..Default::default()
             })),
             sprite: Sprite {
-                color: Color::PINK,
+                color: bevy::color::palettes::basic::FUCHSIA.into(),
                 ..Default::default()
             },
             transform: Transform::from_xyz(-100.0, -100.0, 0.0),

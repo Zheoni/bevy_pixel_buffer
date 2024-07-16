@@ -12,7 +12,7 @@ fn main() {
         .add_systems(Startup, pixel_buffer_setup(size))
         .add_systems(PostStartup, draw_random)
         .add_systems(Update, update)
-        .run()
+        .run();
 }
 
 fn draw_random(mut pb: QueryPixelBuffer) {

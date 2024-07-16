@@ -13,7 +13,7 @@ fn main() {
             ComputeShaderPlugin::<GameOfLifeShader>::default(), // add a plugin to handle our shader
         ))
         .add_systems(Startup, setup)
-        .run()
+        .run();
 }
 
 fn setup(

@@ -14,7 +14,7 @@ fn main() {
                 .setup(),
         )
         .add_systems(Update, update)
-        .run()
+        .run();
 }
 
 fn update(mut egui_context: EguiContexts, mut pb: QueryPixelBuffer) {

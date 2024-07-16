@@ -21,7 +21,7 @@ fn main() {
         ))
         .add_systems(Startup, setup)
         .add_systems(Update, (process_input, ui))
-        .run()
+        .run();
 }
 
 fn setup(

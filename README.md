@@ -33,7 +33,7 @@ fn main() {
         .add_plugins((DefaultPlugins, PixelBufferPlugin))
         .add_systems(Startup, pixel_buffer_setup(size))
         .add_systems(Update, update)
-        .run()
+        .run();
 }
 
 fn update(mut pb: QueryPixelBuffer) {
@@ -59,6 +59,7 @@ Version compatibility table.
 
 | `bevy` | `bevy_pixel_buffer` |
 | ------ | ------------------- |
+| `0.14` | `0.8`               |
 | `0.13` | `0.7`               |
 | `0.12` | `0.6`               |
 | `0.11` | `0.5`               |

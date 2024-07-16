@@ -1,6 +1,7 @@
 //! Pixel struct with the ability to send it to the GPU.
 
 use bevy::{
+    color::{ColorToPacked, LinearRgba},
     math::{DVec3, DVec4, Vec3, Vec4},
     prelude::Color,
     render::render_resource::TextureFormat,
@@ -79,12 +80,23 @@ impl Pixel {
 
     /// As a bevy [Color]
     pub fn as_color(self) -> Color {
-        Color::rgba_linear(
+        Color::linear_rgba(
             self.r as f32 / 255.0,
             self.g as f32 / 255.0,
             self.b as f32 / 255.0,
             self.a as f32 / 255.0,
         )
+    }
+}
+
+impl From<[u8; 3]> for Pixel {
+    fn from(c: [u8; 3]) -> Self {
+        Self {
+            r: c[0],
+            g: c[1],
+            b: c[2],
+            a: 255,
+        }
     }
 }
 
@@ -196,6 +208,12 @@ impl From<DVec3> for Pixel {
 
 impl From<Color> for Pixel {
     fn from(c: Color) -> Self {
-        c.as_linear_rgba_u32().into()
+        c.to_linear().to_u8_array().into()
+    }
+}
+
+impl From<LinearRgba> for Pixel {
+    fn from(c: LinearRgba) -> Self {
+        c.to_u8_array().into()
     }
 }

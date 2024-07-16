@@ -8,7 +8,7 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Update, (update, delete))
         .insert_resource(NextId(1))
-        .run()
+        .run();
 }
 
 #[derive(Component)]
@@ -94,7 +94,7 @@ fn insert_pixel_buffer(
                 } else {
                     0.8
                 };
-                Color::rgba_linear(color[0], color[1], color[2], a)
+                Color::linear_rgba(color[0], color[1], color[2], a)
             });
         })
         .entity()

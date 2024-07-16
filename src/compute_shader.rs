@@ -13,7 +13,7 @@ use bevy::{
         render_graph::{self, RenderGraph, RenderLabel},
         render_resource::*,
         renderer::RenderDevice,
-        texture::FallbackImage,
+        texture::{FallbackImage, GpuImage},
         Extract, Render, RenderApp, RenderSet,
     },
     utils::{HashMap, HashSet},
@@ -101,7 +101,7 @@ impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
     fn build(&self, app: &mut App) {
         app.init_asset::<S>();
 
-        if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
+        if let Some(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app
                 .init_resource::<ExtractedShaders<S>>()
                 .init_resource::<PreparedShaders<S>>()
@@ -112,7 +112,7 @@ impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
                     (prepare_images::<S>, prepare_shaders::<S>).in_set(RenderSet::Prepare),
                 )
                 .add_systems(Render, cs_queue_bind_group::<S>.in_set(RenderSet::Queue));
-            let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
+            let mut render_graph = render_app.world_mut().resource_mut::<RenderGraph>();
             render_graph.add_node(UserCs, ComputeShaderNode::<S>::default());
             render_graph.add_node_edge(UserCs, bevy::render::graph::CameraDriverLabel);
         } else {
@@ -121,7 +121,7 @@ impl<S: ComputeShader> Plugin for ComputeShaderPlugin<S> {
     }
 
     fn finish(&self, app: &mut App) {
-        if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
+        if let Some(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app.init_resource::<ComputeShaderPipeline<S>>();
         }
     }
@@ -302,7 +302,7 @@ fn prepare_images<S: ComputeShader>(
     buffers: Query<&Handle<Image>, With<Handle<S>>>,
     render_device: Res<RenderDevice>,
     pipeline: Res<ComputeShaderPipeline<S>>,
-    images: Res<RenderAssets<Image>>,
+    images: Res<RenderAssets<GpuImage>>,
     invalid_images: Res<InvalidatedImages<S>>,
     mut prepared_images: ResMut<PreparedImages<S>>,
 ) {
@@ -331,7 +331,7 @@ fn prepare_images<S: ComputeShader>(
                     image_handle_id,
                     PreparedImage {
                         texture_bind_group,
-                        size: view.size.as_uvec2(),
+                        size: view.size,
                         marker: PhantomData::<S>,
                     },
                 );
@@ -371,7 +371,7 @@ fn prepare_shaders<S: ComputeShader>(
     mut extracted_assets: ResMut<ExtractedShaders<S>>,
     mut render_materials: ResMut<PreparedShaders<S>>,
     render_device: Res<RenderDevice>,
-    images: Res<RenderAssets<Image>>,
+    images: Res<RenderAssets<GpuImage>>,
     fallback_image: Res<FallbackImage>,
     pipeline: Res<ComputeShaderPipeline<S>>,
 ) {
@@ -406,7 +406,7 @@ fn prepare_shaders<S: ComputeShader>(
 fn prepare_shader<S: ComputeShader>(
     shaader: &S,
     render_device: &RenderDevice,
-    images: &RenderAssets<Image>,
+    images: &RenderAssets<GpuImage>,
     fallback_image: &FallbackImage,
     pipeline: &ComputeShaderPipeline<S>,
 ) -> Result<PreparedShader<S>, AsBindGroupError> {
