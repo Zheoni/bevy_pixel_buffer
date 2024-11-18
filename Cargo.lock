@@ -673,7 +673,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_pixel_buffer"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "bevy",
  "bevy_egui",
