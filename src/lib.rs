@@ -41,8 +41,8 @@
 //! queries related to one or more pixel buffers.
 //!
 //! ### Modify a pixel buffer
-//! The data of the pixels lives inside a bevy [Image](bevy::prelude::Image). To edit it exists the
-//! [Frame](crate::frame::Frame) struct. There are many ways to get a [Frame](crate::frame::Frame).
+//! The data of the pixels lives inside a bevy [Image](bevy::prelude::Image). To edit it you can
+//! use the [Frame](crate::frame::Frame) struct. There are many ways to get a [Frame](crate::frame::Frame).
 //!
 //! Once you have a [Frame](crate::frame::Frame) it offers methods to edit the [Pixel](crate::pixel::Pixel)s.
 //! The crate does not offer drawing behaviour (yet) for shapes like triangles, quads or anything like that,
