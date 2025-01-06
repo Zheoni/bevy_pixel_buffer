@@ -53,6 +53,20 @@ fn update(mut pb: QueryPixelBuffer) {
 
 \* Disabled by default.
 
+### Using the Egui integration
+
+To use the Egui integration, depend on `bevy_egui` and enable the feature by passing `--features "egui"` to your cargo calls, or permanently add the feature through your `Cargo.toml` like this
+
+```toml
+[dependencies]
+bevy_pixel_buffer = { version = "*", features = ["egui"] }
+bevy_egui = "0.30" # (for bevy 14)
+```
+
+## Documentation
+
+Further rendered documentation can be found at [docs.rs/bevy_pixel_buffer](https://docs.rs/bevy_pixel_buffer/latest/bevy_pixel_buffer/).
+
 ## Bevy versions
 
 Version compatibility table.
