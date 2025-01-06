@@ -57,7 +57,7 @@ fn update(mut pb: QueryPixelBuffer) {
 
 To use the Egui integration, depend on `bevy_egui` and enable the feature by passing `--features "egui"` to your cargo calls, or permanently add the feature through your `Cargo.toml` like this
 
-```
+```toml
 [dependencies]
 bevy_pixel_buffer = { version = "*", features = ["egui"] }
 bevy_egui = "0.30" # (for bevy 14)
